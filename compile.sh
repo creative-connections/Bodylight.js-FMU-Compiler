@@ -24,6 +24,8 @@ emcc $fmu_dir/sources/all.c \
     -s MODULARIZE=1 \
     -o $build_dir/model.js \
     -s ALLOW_MEMORY_GROWTH=1 \
+    -s WASM=1 \
+    -O2 \
     -s ASSERTIONS=2 \
     -s RESERVED_FUNCTION_POINTERS=20 \
     -s EXPORTED_FUNCTIONS="['_${model_name}_fmi2CancelStep',
@@ -120,5 +122,3 @@ emcc $fmu_dir/sources/all.c \
         'writeAsciiToMemory',
         'addRunDependency',
         'removeRunDependency']";
-
-rm $build_dir/fmu.bc
