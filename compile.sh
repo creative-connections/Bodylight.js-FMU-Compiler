@@ -26,6 +26,7 @@ emcc $fmu_dir/sources/all.c \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s WASM=1 \
     -O2 \
+    -D linux \
     -s ASSERTIONS=2 \
     -s RESERVED_FUNCTION_POINTERS=20 \
     -s EXPORTED_FUNCTIONS="['_${model_name}_fmi2CancelStep',
