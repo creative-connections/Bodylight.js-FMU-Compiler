@@ -164,6 +164,22 @@ Module['wrapFunctions'] = function () {
 }
 
 /**
+ * Loads and parses modelDescription.xml, adds FMI C api to the model.
+ */
+Module['loadFmiFunctions'] = function () {
+  var self = this
+  return new Promise(function (resolve, reject) {
+    self.loadXML().then(function (val) {
+      self.parseXML()
+      self.wrapFunctions()
+      resolve(self)
+    }).catch(function (err) {
+      reject(err)
+    })
+  })
+}
+
+/**
  * There is a bug in emscripten which causes Module.then to enter an
  * infinite loop when called from Promise.all(), this is a workaround.
  * Provides Module.ready Promise which is properly thennable.
@@ -177,19 +193,10 @@ Module['ready'] = new Promise(function (resolve, reject) {
     reject(what)
   }
   addOnPostRun(function () {
-    resolve(Module)
-  })
-})
-
-Module['loadFmiFunctions'] = function () {
-  var self = this
-  return new Promise(function (resolve, reject) {
-    self.loadXML().then(function (val) {
-      self.parseXML()
-      self.wrapFunctions()
-      resolve(self)
+    Module['loadFmiFunctions']().then(function (result) {
+      resolve(Module)
     }).catch(function (err) {
       reject(err)
     })
   })
-}
+})
