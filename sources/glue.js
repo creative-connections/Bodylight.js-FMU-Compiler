@@ -19,6 +19,35 @@ Module['heapArray'] = function (arr) {
 }
 
 /**
+ * Implements a rudimentary browser console logger for the FMU.
+ */
+Module['consoleLogger'] = function (
+  componentEnvironment, instanceName, status, category, message, other) {
+  /* Fills variables into message returned by the FMU, the C way */
+  var formatMessage = function (message, other) {
+    // get a new pointer
+    var ptr = Module._malloc(1)
+    // get the size of the resulting formated message
+    var num = Module.snprintf(ptr, 0, message, other)
+    Module._free(ptr)
+    num++ // TODO: Error handling num < 0
+    ptr = Module._malloc(num)
+    Module.snprintf(ptr, num, message, other)
+
+    // return pointer to the resulting message string
+    return ptr
+  }
+
+  console.log('FMU(' + Module.UTF8ToString(instanceName) +
+    ':' + status + ':' +
+    Module.UTF8ToString(category) +
+    ') msg: ' + Module.UTF8ToString(formatMessage(message, other))
+  )
+
+  Module._free(formatMessage)
+}
+
+/**
  * Sends a XHR request to url Module.modelDescriptionFile,
  * expecting to find a FMU 2.0 modelDescription.xml file.
  * @return {Promise} rejects on not found
@@ -164,6 +193,21 @@ Module['wrapFunctions'] = function () {
 }
 
 /**
+ * Adds useful function pointers to the heap
+ */
+Module['addFunctionPointers'] = function () {
+  // rudimentary console logger
+  this.consoleLoggerPtr = this.addFunction(this.consoleLogger)
+}
+
+/**
+ * Defines enum values.
+ */
+Module['addEnumValues'] = function () {
+  this.fmi2CoSimulation = 1
+}
+
+/**
  * Loads and parses modelDescription.xml, adds FMI C api to the model.
  */
 Module['loadFmiFunctions'] = function () {
@@ -172,6 +216,9 @@ Module['loadFmiFunctions'] = function () {
     self.loadXML().then(function (val) {
       self.parseXML()
       self.wrapFunctions()
+      self.addFunctionPointers()
+      self.addEnumValues()
+
       resolve(self)
     }).catch(function (err) {
       reject(err)
