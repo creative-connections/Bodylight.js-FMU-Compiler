@@ -3,8 +3,8 @@
 build_dir="build"
 fmu_dir="$build_dir/fmu"
 
-if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 [INPUT_FMU]"
+if [ "$#" -lt 2 ]; then
+    echo "Usage: $0 INPUT_FMU EXPORT_NAME"
     exit 1
 fi
 
@@ -18,11 +18,13 @@ model_name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulat
 
 emcc $fmu_dir/sources/all.c \
     sources/glue.c \
+    --post-js sources/glue.js \
     -Isources/fmi \
     -I$fmu_dir/sources \
     -lm \
     -s MODULARIZE=1 \
-    -o $build_dir/model.js \
+    -s EXPORT_NAME=\"$2\" \
+    -o $build_dir/model.html \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s WASM=1 \
     -O2 \
@@ -122,4 +124,4 @@ emcc $fmu_dir/sources/all.c \
         'writeArrayToMemory',
         'writeAsciiToMemory',
         'addRunDependency',
-        'removeRunDependency']";
+        'removeRunDependency']" --separate-asm;
