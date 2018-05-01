@@ -1,0 +1,16 @@
+{
+  "env" : {
+      "browser": true
+  },
+  "globals" : {
+    "Module": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "standard"
+  ],
+  "rules": {
+    "no-console": "warn",
+    "no-undef": "warn"
+  }
+}
