@@ -19,6 +19,45 @@ Module['heapArray'] = function (arr) {
 }
 
 /**
+ * Sets Reals to FMU
+ */
+Module['setReal'] = function (query, value, count) {
+  return this.fmi2SetReal(this.inst, query.byteOffset, count, value.byteOffset)
+}
+
+/**
+ * Loads Reals from FMU
+ */
+Module['getReal'] = function (query, output, count) {
+  return this.fmi2GetReal(this.inst, query.byteOffset, count, output.byteOffset)
+}
+
+/**
+ * Loads a single real value based on reference, this is a shorthand function.
+ * It is recommended to use Module.getReal with reusable mallocs.
+ */
+Module['getSingleReal'] = function (reference) {
+  var query = this.heapArray(new Int32Array([reference]))
+  var output = this.heapArray(new Float64Array(1))
+  this.getReal(query, output, 1)
+  var num = new Float64Array(output.buffer, output.byteOffset, 1)
+  this._free(query.byteOffset)
+  this._free(output.byteOffset)
+  return num
+}
+
+/**
+ * Loads Reals from FMU based on Module.config.variables
+ */
+Module['getRealFromConfig'] = function () {
+  return this.fmi2GetReal(
+    this.inst,
+    this.config.variables.byteOffset,
+    this.config.count,
+    this.config.output.byteOffset)
+}
+
+/**
  * Implements a rudimentary browser console logger for the FMU.
  */
 Module['consoleLogger'] = function (
@@ -98,9 +137,85 @@ Module['parseXML'] = function () {
   this.identifier = this.xmlDoc.evaluate(
     'string(//fmiModelDescription/CoSimulation/@modelIdentifier)',
     this.xmlDoc, resolver, XPathResult.STRING_TYPE, null).stringValue
+}
 
-  // TODO: parse variables
-  // TODO: parse parameters
+/**
+ * Parses FMU variables from modelDescription.xml
+ */
+Module['parseFmuVariables'] = function () {
+  this.fmuVariables = {}
+
+  var resolver = this.xmlDoc.createNSResolver(
+    this.xmlDoc.ownerDocument == null
+      ? this.xmlDoc.documentElement
+      : this.xmlDoc.ownerDocument.documentElement
+  )
+  var variableIterator = this.xmlDoc.evaluate(
+    '//ScalarVariable[not(@causality="parameter")]',
+    this.xmlDoc,
+    resolver,
+    XPathResult.UNORDERED_NODE_ITERATOR_TYPE,
+    null
+  )
+
+  try {
+    var node = variableIterator.iterateNext()
+    while (node) {
+      var name = node.getAttribute('name')
+      this.fmuVariables[name] = {
+        'name': node.getAttribute('name'),
+        'reference': node.getAttribute('valueReference'),
+        'description': node.getAttribute('description'),
+        'causality': node.getAttribute('causality'),
+        'variability': node.getAttribute('variability'),
+        'initial': node.getAttribute('initial'),
+        'canHandleMultipleSetPerTimeInstant':
+          node.getAttribute('canHandleMultipleSetPerTimeInstant')
+      }
+      node = variableIterator.iterateNext()
+    }
+  } catch (e) {
+    console.error('Error while parsing FMU variables: ' + e)
+  }
+}
+
+/**
+ * Parses FMU parameters from modelDescription.xml
+ */
+Module['parseFmuParameters'] = function () {
+  this.fmuParameters = {}
+
+  var resolver = this.xmlDoc.createNSResolver(
+    this.xmlDoc.ownerDocument == null
+      ? this.xmlDoc.documentElement
+      : this.xmlDoc.ownerDocument.documentElement
+  )
+  var parmIterator = this.xmlDoc.evaluate(
+    '//ScalarVariable[@causality="parameter"]',
+    this.xmlDoc,
+    resolver,
+    XPathResult.UNORDERED_NODE_ITERATOR_TYPE,
+    null
+  )
+  try {
+    var node = parmIterator.iterateNext()
+    while (node) {
+      var name = node.getAttribute('name')
+      this.fmuParameters[name] = {
+        'name': node.getAttribute('name'),
+        'reference': node.getAttribute('valueReference'),
+        'description': node.getAttribute('description'),
+        'causality': node.getAttribute('causality'),
+        'variability': node.getAttribute('variability'),
+        'initial': node.getAttribute('initial'),
+        'canHandleMultipleSetPerTimeInstant':
+          node.getAttribute('canHandleMultipleSetPerTimeInstant')
+      }
+      node = parmIterator.iterateNext()
+    }
+  } catch (err) {
+    console.error('Error while parsing FMU parameters: ' + err)
+  }
 }
 
 /**
@@ -218,6 +333,8 @@ Module['loadFmiFunctions'] = function () {
       self.wrapFunctions()
       self.addFunctionPointers()
       self.addEnumValues()
+      self.parseFmuParameters()
+      self.parseFmuVariables()
 
       resolve(self)
     }).catch(function (err) {
