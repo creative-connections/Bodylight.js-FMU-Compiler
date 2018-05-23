@@ -26,10 +26,37 @@ Module['setReal'] = function (query, value, count) {
 }
 
 /**
+ * Sets Booleans to FMU
+ */
+Module['setBoolean'] = function (query, value, count) {
+  return this.fmi2SetBoolean(this.inst, query.byteOffset, count, value.byteOffset)
+}
+
+/**
  * Loads Reals from FMU
  */
 Module['getReal'] = function (query, output, count) {
   return this.fmi2GetReal(this.inst, query.byteOffset, count, output.byteOffset)
+}
+
+/**
+ * Loads Booleans from FMU
+ */
+Module['getBoolean'] = function (query, output, count) {
+  return this.fmi2GetBoolean(this.inst, query.byteOffset, count, output.byteOffset)
+}
+
+/**
+ * Sets a single real value based on reference, this is a shorthand function.
+ * It is recommended to use Module.setReal with reusable mallocs.
+ */
+Module['setSingleReal'] = function (reference, value) {
+  var query = this.heapArray(new Int32Array([reference]))
+  var val = this.heapArray(new Float64Array([value]))
+  var out = this.setReal(query, val, 1)
+  this._free(query.byteOffset)
+  this._free(val.byteOffset)
+  return out
 }
 
 /**
@@ -41,6 +68,33 @@ Module['getSingleReal'] = function (reference) {
   var output = this.heapArray(new Float64Array(1))
   this.getReal(query, output, 1)
   var num = new Float64Array(output.buffer, output.byteOffset, 1)
+  this._free(query.byteOffset)
+  this._free(output.byteOffset)
+  return num
+}
+
+/**
+ * Sets a single boolean value based on reference, this is a shorthand function.
+ * It is recommended to use Module.setBoolean with reusable mallocs.
+ */
+Module['setSingleBoolean'] = function (reference, value) {
+  var query = this.heapArray(new Int32Array([reference]))
+  var val = this.heapArray(new Int32Array([value]))
+  var out = this.setBoolean(query, val, 1)
+  this._free(query.byteOffset)
+  this._free(val.byteOffset)
+  return out
+}
+
+/**
+ * Loads a single boolean value based on reference, this is a shorthand function.
+ * It is recommended to use Module.getBoolean with reusable mallocs.
+ */
+Module['getSingleBoolean'] = function (reference) {
+  var query = this.heapArray(new Int32Array([reference]))
+  var output = this.heapArray(new Int32Array(1))
+  this.getBoolean(query, output, 1)
+  var num = new Int32Array(output.buffer, output.byteOffset, 1)
   this._free(query.byteOffset)
   this._free(output.byteOffset)
   return num
@@ -297,6 +351,24 @@ Module['wrapFunctions'] = function () {
     ]
   )
 
+  this.fmi2GetBoolean = this.cwrap(
+    this.identifier + '_fmi2GetBoolean', 'number', [
+      'number',
+      'number',
+      'number',
+      'number'
+    ]
+  )
+
+  this.fmi2SetBoolean = this.cwrap(
+    this.identifier + '_fmi2SetBoolean', 'number', [
+      'number',
+      'number',
+      'number',
+      'number'
+    ]
+  )
+
   this.fmi2DoStep = this.cwrap(
     this.identifier + '_fmi2DoStep', 'number', [
       'number',
@@ -342,6 +414,10 @@ Module['loadFmiFunctions'] = function () {
     })
   })
 }
+
+/* Boolean defines */
+Module['fmi2True'] = 1
+Module['fmi2False'] = 0
 
 /**
  * There is a bug in emscripten which causes Module.then to enter an
