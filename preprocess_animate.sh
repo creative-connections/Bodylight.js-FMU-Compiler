@@ -11,17 +11,17 @@ if [ ! -f $1 ]; then
 fi
 
 OUT="$1.new"
-match='.*name *='
+name='.*name *='
 
-while IFS= read -r line
+while IFS= read -r line || [ -n "$line" ]
 do
     echo "$line"
-    if [[ $line =~ $match ]] ; then
+    if [[ $line =~ $name ]] ; then
       reference=`echo $line | awk -F"\.name" '{print $1;}'`
       echo "lib.addExportedComponent($reference);"
     fi
 
-done < "$1" > $OUT
+done < "$1"  > $OUT
 
 rm $1
 mv $OUT $1

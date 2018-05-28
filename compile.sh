@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 build_dir="build"
 fmu_dir="$build_dir/fmu"
