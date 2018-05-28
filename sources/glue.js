@@ -47,16 +47,51 @@ Module['getBoolean'] = function (query, output, count) {
 }
 
 /**
- * Sets a single real value based on reference, this is a shorthand function.
- * It is recommended to use Module.setReal with reusable mallocs.
+ * Sets every value waiting in the setQueues
+ */
+Module['flushSetQueues'] = function () {
+  this.flushRealQueue()
+  this.flushBooleanQueue()
+}
+
+Module['flushBooleanQueue'] = function () {
+  if (this.setBooleanQueue) {
+    var references = this.heapArray(new Int32Array(this.setBooleanQueue.references))
+    var values = this.heapArray(new Int32Array(this.setBooleanQueue.values))
+
+    this.setBoolean(references, values, this.setBooleanQueue.references.length)
+    this._free(references.byteOffset)
+    this._free(values.byteOffset)
+
+    this.setBooleanQueue = false
+  }
+}
+
+Module['flushRealQueue'] = function () {
+  if (this.setRealQueue) {
+    var references = this.heapArray(new Int32Array(this.setRealQueue.references))
+    var values = this.heapArray(new Float64Array(this.setRealQueue.values))
+
+    this.setReal(references, values, this.setRealQueue.references.length)
+    this._free(references.byteOffset)
+    this._free(values.byteOffset)
+
+    this.setRealQueue = false
+  }
+}
+
+/**
+ * Adds a real value to setRealQueue
  */
 Module['setSingleReal'] = function (reference, value) {
-  var query = this.heapArray(new Int32Array([reference]))
-  var val = this.heapArray(new Float64Array([value]))
-  var out = this.setReal(query, val, 1)
-  this._free(query.byteOffset)
-  this._free(val.byteOffset)
-  return out
+  if (!this.setRealQueue) {
+    this.setRealQueue = {
+      references: [],
+      values: []
+    }
+  }
+  this.setRealQueue.references.push(reference)
+  this.setRealQueue.values.push(value)
 }
 
 /**
@@ -70,20 +105,20 @@ Module['getSingleReal'] = function (reference) {
   var num = new Float64Array(output.buffer, output.byteOffset, 1)
   this._free(query.byteOffset)
   this._free(output.byteOffset)
-  return num
+  return num[0]
 }
 
 /**
- * Sets a single boolean value based on reference, this is a shorthand function.
- * It is recommended to use Module.setBoolean with reusable mallocs.
  */
 Module['setSingleBoolean'] = function (reference, value) {
-  var query = this.heapArray(new Int32Array([reference]))
-  var val = this.heapArray(new Int32Array([value]))
-  var out = this.setBoolean(query, val, 1)
-  this._free(query.byteOffset)
-  this._free(val.byteOffset)
-  return out
+  if (!this.setBooleanQueue) {
+    this.setBooleanQueue = {
+      references: [],
+      values: []
+    }
+  }
+  this.setBooleanQueue.references.push(reference)
+  this.setBooleanQueue.values.push(value)
 }
 
 /**
@@ -97,7 +132,7 @@ Module['getSingleBoolean'] = function (reference) {
   var num = new Int32Array(output.buffer, output.byteOffset, 1)
   this._free(query.byteOffset)
   this._free(output.byteOffset)
-  return num
+  return num[0]
 }
 
 /**
@@ -418,6 +453,9 @@ Module['loadFmiFunctions'] = function () {
 /* Boolean defines */
 Module['fmi2True'] = 1
 Module['fmi2False'] = 0
+
+Module['setRealQueue'] = false
+Module['setBooleanQueue'] = false
 
 /**
  * There is a bug in emscripten which causes Module.then to enter an
