@@ -14,7 +14,15 @@ fi
 mkdir -p "$fmu_dir"
 unzip -q $1 -d "$fmu_dir"
 
+name=$2
+zipfile="$build_dir/$name.zip"
+if [ -f $zipfile ] ; then
+    rm $zipfile
+fi
+
 model_name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulation/@modelIdentifier)")
+
+cp "$fmu_dir/modelDescription.xml" "$build_dir/"
 
 emcc $fmu_dir/sources/all.c \
     sources/glue.c \
@@ -24,7 +32,7 @@ emcc $fmu_dir/sources/all.c \
     -lm \
     -s MODULARIZE=1 \
     -s EXPORT_NAME=\"$2\" \
-    -o $build_dir/model.html \
+    -o $build_dir/$2.html \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s WASM=1 \
     -O2 \
@@ -124,3 +132,11 @@ emcc $fmu_dir/sources/all.c \
         'writeAsciiToMemory',
         'addRunDependency',
         'removeRunDependency']";
+
+zip $zipfile "$build_dir/$name.js" "$build_dir/$name.wasm" "$build_dir/modelDescription.xml"
+
+rm "$build_dir/$name.html"
+rm "$build_dir/$name.js"
+rm "$build_dir/$name.wasm"
+rm "$build_dir/modelDescription.xml"
+
