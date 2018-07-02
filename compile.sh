@@ -133,7 +133,7 @@ emcc $fmu_dir/sources/all.c \
         'addRunDependency',
         'removeRunDependency']";
 
-zip $zipfile "$build_dir/$name.js" "$build_dir/$name.wasm" "$build_dir/modelDescription.xml"
+zip -j $zipfile "$build_dir/$name.js" "$build_dir/$name.wasm" "$build_dir/modelDescription.xml"
 
 rm "$build_dir/$name.html"
 rm "$build_dir/$name.js"
