@@ -81,8 +81,7 @@ emcc $fmu_dir/sources/all.c \
         '_createFmi2CallbackFunctions',
         '_snprintf',
         '_calloc',
-        '_free'
-        ]" \
+        '_free']" \
     -s EXTRA_EXPORTED_RUNTIME_METHODS="[
         'FS_createFolder',
         'FS_createPath',
@@ -124,4 +123,4 @@ emcc $fmu_dir/sources/all.c \
         'writeArrayToMemory',
         'writeAsciiToMemory',
         'addRunDependency',
-        'removeRunDependency']" --separate-asm;
+        'removeRunDependency']";
