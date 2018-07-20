@@ -24,6 +24,7 @@ model_name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulat
 
 cp "$fmu_dir/modelDescription.xml" "$build_dir/"
 
+
 emcc $fmu_dir/sources/all.c \
     sources/glue.c \
     --post-js sources/glue.js \
@@ -32,13 +33,15 @@ emcc $fmu_dir/sources/all.c \
     -lm \
     -s MODULARIZE=1 \
     -s EXPORT_NAME=\"$2\" \
-    -o $build_dir/$2.html \
+    -o $build_dir/$2.js \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s WASM=1 \
-    -O2 \
+    -O0 \
     -D linux \
     -s ASSERTIONS=2 \
+    -s SINGLE_FILE=1 \
     -s RESERVED_FUNCTION_POINTERS=20 \
+    -s "BINARYEN_METHOD='native-wasm'" \
     -s EXPORTED_FUNCTIONS="['_${model_name}_fmi2CancelStep',
         '_${model_name}_fmi2CompletedIntegratorStep',
         '_${model_name}_fmi2DeSerializeFMUstate',
@@ -133,10 +136,9 @@ emcc $fmu_dir/sources/all.c \
         'addRunDependency',
         'removeRunDependency']";
 
-zip -j $zipfile "$build_dir/$name.js" "$build_dir/$name.wasm" "$build_dir/modelDescription.xml"
 
-rm "$build_dir/$name.html"
+zip -j $zipfile "$build_dir/$name.js" "$build_dir/modelDescription.xml"
+
 rm "$build_dir/$name.js"
-rm "$build_dir/$name.wasm"
 rm "$build_dir/modelDescription.xml"
 
