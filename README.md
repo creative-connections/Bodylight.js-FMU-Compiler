@@ -1,23 +1,10 @@
-FMU -> JS
+# Bodylight.js FMU Compiler
 
-### Compile environment setup on WSL
+This is a Docker image facilitating compilation of FMU files with embedded
+source code to JavaScript.
 
-Install Windows Subsystem for Linux (tested on the Ubuntu distribution)
+Currently supporting FMUs from Dymola.
 
-Prerequisites
+### Docker install
 
-```
-unzip libxml2-utils python2.7 python nodejs cmake default-jre git
-```
-
-Emscripten SDK
-```
-git clone https://github.com/juj/emsdk.git
-cd emsdk
-./emsdk update
-./emsdk install latest
-./emsdk activate latest 
-```
-
-
-
+Install Windows Subsystem for Linux
