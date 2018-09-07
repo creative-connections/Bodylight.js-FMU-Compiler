@@ -1,8 +1,7 @@
 FROM apiaryio/emcc
 WORKDIR /work
-ADD ./compiler /compiler
+ADD ./compiler /work
 
-RUN apt-get install -y git
+RUN apt-get install -y libxml2-utils zip inotify-tools file unzip
 
-# Run app.py when the container launches
-#CMD ["python", "app.py"]
+CMD ["bash", "worker.sh"]
