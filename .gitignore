@@ -1,6 +1,1 @@
-build/
-*.fmu
-*.wasm
-modelDescription.xml
-node_modules/
-*.mo
+.fmu

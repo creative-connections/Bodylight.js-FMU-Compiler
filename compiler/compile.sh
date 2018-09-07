@@ -140,4 +140,3 @@ zip -j $zipfile "$build_dir/$name.js" "$build_dir/modelDescription.xml"
 
 rm "$build_dir/$name.js"
 rm "$build_dir/modelDescription.xml"
-
