@@ -1,14 +1,12 @@
 #!/bin/bash
 
-inotifywait -m -r -e create --format '%w%f' "/input" | while read FILE
+inotifywait -m -r -e close_write --format '%w%f' "/input" | while read FILE
 do
   echo "=== Processing file ${FILE} ==="
 
   filename="${FILE##*/}"
   basename="${filename%.*}"
   log="/output/${basename}.log"
-
-  sleep 2
   
   mime=$(file ${FILE} -b --mime-type)
   if [ $mime != "application/zip" ];then
