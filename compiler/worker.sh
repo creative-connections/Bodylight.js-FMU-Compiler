@@ -8,6 +8,8 @@ do
   basename="${filename%.*}"
   log="/output/${basename}.log"
 
+  sleep 2
+  
   mime=$(file ${FILE} -b --mime-type)
   if [ $mime != "application/zip" ];then
     echo "ERROR: ${FILE} (${mime}) is not a FMU type (application/zip)" | tee $log
