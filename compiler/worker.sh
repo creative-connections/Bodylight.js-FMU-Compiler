@@ -33,5 +33,5 @@ do
     echo "Compilation finished."
   fi
 
-  rm ${FILE}
+  rm -f ${FILE}
 done
