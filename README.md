@@ -5,10 +5,6 @@ source code to JavaScript.
 
 Currently supporting FMUs from Dymola.
 
-## Docker install
-
-Install Windows Subsystem for Linux
-
 ## Usage
 Put `name.fmu` files into the `input` directory. After the compilation finishes,
 `input/name.fmu` is deleted and the resulting `name.js` file is copied to
@@ -16,4 +12,4 @@ Put `name.fmu` files into the `input` directory. After the compilation finishes,
 
 Files are processed sequentially in alphabetical order.
 
-In case of error, only the compilation log is present in the output directory.
+In case of error, only the compilation log will be present in the output directory.
