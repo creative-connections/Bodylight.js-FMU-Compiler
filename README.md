@@ -13,16 +13,16 @@ Currently supports FMUs exported from Dymola (with sources).
 
 2. Build the docker image
 ```bash
-docker build -t bodylight.fmu.compiler "$(pwd)"
+docker build -t bodylight.js.fmu.compiler "$(pwd)"
 ```
- This builds the Dockerfile as bodylight.fmu.compiler. This might take a while, as it downloads about 400 MiBs of a docker image from the internet.
+ This builds the Dockerfile as bodylight.js.fmu.compiler. This might take a while, as it downloads about 400 MiBs of a docker image from the internet.
 
  You might need to run this command with root privileges.
 
 ## Starting the compiler
 ```bash
 docker run -d \
-  --name bodylight.fmu.compiler \
+  --name bodylight.js.fmu.compiler \
   --mount type=bind,source="$(pwd)"/input,target=/input \
   --mount type=bind,source="$(pwd)"/output,target=/output \
   bodylight.fmu.compiler:latest bash worker.sh
@@ -31,7 +31,7 @@ This starts the docker container and binds the `input` and `output` directories.
 
 ## Stopping the compiler
 ```bash
-docker stop bodylight.fmu.compiler
+docker stop bodylight.js.fmu.compiler
 ```
 
 ## Usage
