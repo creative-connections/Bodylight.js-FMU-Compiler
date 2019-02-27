@@ -7,7 +7,7 @@ do
   filename="${FILE##*/}"
   basename="${filename%.*}"
   log="/output/${basename}.log"
-  
+
   mime=$(file ${FILE} -b --mime-type)
   if [ $mime != "application/zip" ];then
     echo "ERROR: ${FILE} (${mime}) is not a FMU type (application/zip)" | tee $log
@@ -20,7 +20,7 @@ do
   fi
 
   echo "Compiling FMU, log: ${log}"
-  bash compile.sh ${FILE} ${basename} 2> $log
+  bash dymola.sh ${FILE} ${basename} 2> $log
 
   build_file="/work/build/${basename}.zip"
   output_file="/output/${basename}.zip"
