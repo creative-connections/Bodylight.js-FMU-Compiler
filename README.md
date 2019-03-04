@@ -3,7 +3,7 @@
 This is a Docker container facilitating compilation of FMU files with embedded
 source code to JavaScript.
 
-Currently supports FMUs exported from Dymola (with sources).
+Currently supports FMUs exported from Dymola (with sources) and OpenModelica.
 
 ## Installation
 
@@ -25,13 +25,14 @@ docker run -d \
   --name bodylight.js.fmu.compiler \
   --mount type=bind,source="$(pwd)"/input,target=/input \
   --mount type=bind,source="$(pwd)"/output,target=/output \
-  bodylight.fmu.compiler:latest bash worker.sh
+  bodylight.js.fmu.compiler:latest bash worker.sh
 ```
 This starts the docker container and binds the `input` and `output` directories.
 
 ## Stopping the compiler
 ```bash
-docker stop bodylight.js.fmu.compiler
+docker stop bodylight.js.fmu.compiler; \
+docker rm bodylight.js.fmu.compiler
 ```
 
 ## Usage
