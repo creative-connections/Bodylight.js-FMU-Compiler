@@ -7,6 +7,30 @@ Currently supports FMUs exported from Dymola (with sources) and OpenModelica.
 
 ## Installation
 
+### Windows instructions
+
+1. Install [docker](https://docs.docker.com/install/)
+
+2. Clone this repository and open PowerShell in the extracted directory
+
+```powershell
+docker build -t bodylight.js.fmu.compiler .
+```
+This builds the Dockerfile as bodylight.js.fmu.compiler.
+ 
+#### Starting the compiler
+
+```powershell
+docker run -d --name bodylight.js.fmu.compiler --mount "type=bind,source=$(Get-Location)\input,target=/input" --mount "type=bind,source=$(Get-Location)\output,target=/output" bodylight.js.fmu.compiler:latest bash worker.sh
+```
+
+#### Stopping the compiler
+```powershell
+docker stop bodylight.js.fmu.compiler; docker rm bodylight.js.fmu.compiler
+```
+
+### Linux instructions
+
 1. Install [docker](https://docs.docker.com/install/)
 
 2. Clone this repository and cd inside
@@ -15,11 +39,9 @@ Currently supports FMUs exported from Dymola (with sources) and OpenModelica.
 ```bash
 docker build -t bodylight.js.fmu.compiler "$(pwd)"
 ```
- This builds the Dockerfile as bodylight.js.fmu.compiler. This might take a while, as it downloads about 400 MiBs of a docker image from the internet.
+ This builds the Dockerfile as bodylight.js.fmu.compiler. You might need to run this command with root privileges.
 
- You might need to run this command with root privileges.
-
-## Starting the compiler
+#### Starting the compiler
 ```bash
 docker run -d \
   --name bodylight.js.fmu.compiler \
@@ -29,7 +51,7 @@ docker run -d \
 ```
 This starts the docker container and binds the `input` and `output` directories.
 
-## Stopping the compiler
+#### Stopping the compiler
 ```bash
 docker stop bodylight.js.fmu.compiler; \
 docker rm bodylight.js.fmu.compiler
