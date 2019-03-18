@@ -9,8 +9,11 @@ Currently supports FMUs exported from Dymola (with sources) and OpenModelica.
 
 1. Install [docker](https://docs.docker.com/install/)
 
-2. Clone this repository and open PowerShell in the directory
+2. Download this repository and open PowerShell in the top directory
 
+If you decide to clone this repository, take care to disable automatic line ending conversion in git.
+
+3. Build the docker image
 ```powershell
 docker build -t bodylight.js.fmu.compiler .
 ```
@@ -32,7 +35,7 @@ After the compilation finishes, `input/name.fmu` is deleted and the resulting `n
 
 2. Clone this repository and cd inside
 
-2. Build the docker image
+3. Build the docker image
 ```bash
 docker build -t bodylight.js.fmu.compiler "$(pwd)"
 ```
