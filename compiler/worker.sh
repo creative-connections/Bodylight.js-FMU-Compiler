@@ -1,8 +1,6 @@
 #!/bin/bash
-
-inotifywait -m -r -e close_write --format '%w%f' "/input" | while read FILE
-do
-
+compile () {
+  FILE=$1
   filename="${FILE##*/}"
   basename="${filename%.*}"
 
@@ -48,4 +46,15 @@ do
   fi
 
   rm -f ${FILE}
-done
+}
+
+if [[ $# -eq 0 ]]; then
+  inotifywait -m -r -e close_write --format '%w%f' "/input" | while read FILE
+  do
+    compile $FILE
+  done
+fi
+
+if [[ $# -eq 1 ]]; then
+  compile /input/$1
+fi
