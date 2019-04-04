@@ -24,6 +24,7 @@ model_name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulat
 
 cp "$fmu_dir/modelDescription.xml" "$build_dir/"
 
+
 emcc $fmu_dir/sources/all.c \
     sources/glue.c \
     --post-js sources/glue.js \
@@ -37,6 +38,7 @@ emcc $fmu_dir/sources/all.c \
     -s WASM=1 \
     -O2 \
     -g0 \
+    --closure 1 \
     -D linux \
     -s ASSERTIONS=2 \
     -s SINGLE_FILE=1 \
