@@ -35,7 +35,9 @@ emcc $fmu_dir/sources/all.c \
     -o $build_dir/$2.js \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s WASM=1 \
-    -O0 \
+    -O2 \
+    -g0 \
+    --closure 2
     -D linux \
     -s ASSERTIONS=2 \
     -s SINGLE_FILE=1 \

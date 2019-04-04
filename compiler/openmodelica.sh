@@ -44,8 +44,9 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
     -o "$name.js" \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s WASM=1 \
-    -O0 \
-    -g2 \
+    -O2 \
+    -g0 \
+    --closure 2
     -s SINGLE_FILE=1 \
     -s ASSERTIONS=2 \
     -s RESERVED_FUNCTION_POINTERS=50 \
