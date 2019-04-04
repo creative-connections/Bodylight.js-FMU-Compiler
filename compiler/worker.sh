@@ -29,7 +29,7 @@ compile () {
   # by OpenModelica do not. Therefore we can differentiate them only by the presence
   # of the all.c file.
 
-  if [[ `unzip -l ${FILE} | grep "all.c"` ]]; then
+  if [[ `unzip -l ${FILE} | grep "sources/all.c"` ]]; then
     echo "Compiling Dymola FMU, log: ${log}" | tee -a $log
     bash dymola.sh ${FILE} ${basename} |& tee -a $log
   else
