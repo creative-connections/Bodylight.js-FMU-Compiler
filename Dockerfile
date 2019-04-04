@@ -1,6 +1,5 @@
 FROM apiaryio/emcc
 WORKDIR /work
-ADD ./compiler /work
 
 RUN \
   apt-get update; \
@@ -14,5 +13,7 @@ RUN \
     unzip \
     pkg-config \
     gcc;
+    
+ADD ./compiler /work
 
 CMD ["bash", "worker.sh"]
