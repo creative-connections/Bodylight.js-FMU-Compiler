@@ -37,7 +37,6 @@ emcc $fmu_dir/sources/all.c \
     -s WASM=1 \
     -O2 \
     -g0 \
-    --closure 2
     -D linux \
     -s ASSERTIONS=2 \
     -s SINGLE_FILE=1 \

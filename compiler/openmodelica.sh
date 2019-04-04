@@ -46,7 +46,6 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
     -s WASM=1 \
     -O2 \
     -g0 \
-    --closure 2
     -s SINGLE_FILE=1 \
     -s ASSERTIONS=2 \
     -s RESERVED_FUNCTION_POINTERS=50 \
