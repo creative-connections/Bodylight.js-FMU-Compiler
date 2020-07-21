@@ -19,14 +19,14 @@ def waitfor(filename,timeout=60):
         time.sleep(5)
         timer+=5
         stop_check = os.path.exists(outputdir+filename) or (timer > timeout)
-        print('... '+str(timer))
+        print('... '+str(timer)+' <br/>')
         sys.stdout.flush()
 
     if (os.path.exists(outputdir+filename)):
-        print(filename + ' detected.')
+        print(filename + ' detected. <br/>')
 
     else:
-        print('After timeout no '+filename+' appeared. Check configuration,logs.');
+        print('After timeout no '+filename+' appeared. Check configuration,logs. <br/>');
     sys.stdout.flush()
 
 
@@ -44,12 +44,13 @@ if fileitem.filename:
     f.close()
     message = 'The file "' + fn + '" was uploaded successfully'
 
-    print("Content-type: text/plain\r\n\r\n")
+    print("Content-type: text/html\r\n\r\n")
     print(message)
+    print('<br/>')
     sys.stdout.flush()
 
     time.sleep(3)
-    print("converting FMU -> JS ...")
+    print("<html><body>converting FMU -> JS ... <br/>")
     sys.stdout.flush()
 
     fnname,fnext = os.path.splitext(fn)
@@ -60,7 +61,7 @@ if fileitem.filename:
     waitfor(fnamelog,30)
     waitfor(fnamezip,60)
     if (os.path.exists(outputdir+fnamezip)):
-        print('FMU Compiler successfull, download result from http://localhost:8080/compiler/output')
+        print('FMU Compiler successfull, download result from <a href="/compiler/output/">/compiler/output/</a>')
     else:
         print('failed. See logs')
 
