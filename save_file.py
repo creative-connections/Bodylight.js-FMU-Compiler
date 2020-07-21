@@ -18,7 +18,7 @@ def waitfor(filename,timeout=60):
     while not stop_check:
         time.sleep(5)
         timer+=5
-        stop_check = os.path.exists(compilerdir+filename) or (timer > timeout)
+        stop_check = os.path.exists(outputdir+filename) or (timer > timeout)
         print('... '+str(timer))
         sys.stdout.flush()
 
