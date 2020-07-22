@@ -61,9 +61,10 @@ if fileitem.filename:
     waitfor(fnamelog,30)
     waitfor(fnamezip,60)
     if (os.path.exists(outputdir+fnamezip)):
-        print('FMU Compiler successfull, download result from <a href="/compiler/output/">/compiler/output/</a>')
+        print('FMU Compiler successfull<br/ >Download result: <a href="/compiler/output/'+fnamezip+'">/compiler/output/'+fnamezip+'</a>')
     else:
         print('failed. See logs')
+    print('<br/>All results and logs:<a href="/compiler/output/">/compiler/output/</a>')
 
 else:
     message = 'No file was uploaded'
