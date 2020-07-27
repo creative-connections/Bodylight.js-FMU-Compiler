@@ -59,7 +59,7 @@ if fileitem.filename:
     fnamezip = fnname + '.zip'
 
     waitfor(fnamelog,30)
-    waitfor(fnamezip,60)
+    waitfor(fnamezip,120)
     if (os.path.exists(outputdir+fnamezip)):
         print('FMU Compiler successfull<br/ >Download result: <a href="/compiler/output/'+fnamezip+'">/compiler/output/'+fnamezip+'</a>')
     else:
