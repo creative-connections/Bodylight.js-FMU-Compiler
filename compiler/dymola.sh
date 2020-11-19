@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#set -x
 build_dir="build"
 fmu_dir="$build_dir/fmu"
 
@@ -138,5 +138,5 @@ emcc $fmu_dir/sources/all.c \
 
 zip -j $zipfile "$build_dir/$name.js" "$build_dir/modelDescription.xml"
 
-rm "$build_dir/$name.js"
-rm "$build_dir/modelDescription.xml"
+#rm "$build_dir/$name.js"
+#rm "$build_dir/modelDescription.xml"

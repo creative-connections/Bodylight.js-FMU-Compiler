@@ -5,7 +5,7 @@ compile () {
   basename="${filename%.*}"
 
   log="/output/${basename}.log"
-  build_file="/work/build/${basename}.zip"
+  build_file="build/${basename}.zip"
   output_file="/output/${basename}.zip"
 
   [ -f ${log} ] && rm $log
