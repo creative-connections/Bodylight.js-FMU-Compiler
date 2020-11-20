@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import cgi, os, sys, time
-import cgitb; cgitb.enable(display=0,logdir="output/")
+import cgitb; cgitb.enable(display=0,logdir="/output/")
 
 form = cgi.FieldStorage()
 compilerdir = '/home/vagrant/Bodylight.js-FMU-Compiler/input/'
@@ -68,4 +68,8 @@ if fileitem.filename:
 
 else:
     message = 'No file was uploaded'
+    print("Content-type: text/html\r\n\r\n")
+    print(message)
+    print('<br/>')
+    sys.stdout.flush()
 
