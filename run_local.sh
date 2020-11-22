@@ -11,5 +11,13 @@ elif [ -d /home/vagrant/emsdk-master ]; then
 fi
 ./emsdk activate latest
 source ./emsdk_env.sh
+
+if [ -f "/home/vagrant/jupyter/etc/profile.d/conda.sh" ]; then
+  . "/home/vagrant/jupyter/etc/profile.d/conda.sh"
+else
+  export PATH="/home/vagrant/jupyter/bin:$PATH"
+fi
+conda activate
+python3 --version 
 cd $COMPILER_HOME/compiler
-./worker.sh
+. ./worker.sh
