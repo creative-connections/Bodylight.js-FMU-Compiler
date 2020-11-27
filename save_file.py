@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 import cgi, os, sys, time
 import cgitb; cgitb.enable(display=0,logdir="output/")
 
@@ -52,6 +53,8 @@ if fileitem.filename:
     time.sleep(3)
     print("<html><body>converting FMU -> JS ... <br/>")
     sys.stdout.flush()
+    print(sys.version)
+
 
     fnname,fnext = os.path.splitext(fn)
 
