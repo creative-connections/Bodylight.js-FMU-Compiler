@@ -4,9 +4,9 @@ compile () {
   filename="${FILE##*/}"
   basename="${filename%.*}"
 
-  log="/output/${basename}.log"
+  log="${COMPILER_HOME}/output/${basename}.log"
   build_file="build/${basename}.zip"
-  output_file="/output/${basename}.zip"
+  output_file="${COMPILER_HOME}/output/${basename}.zip"
 
   [ -f ${log} ] && rm $log
   [ -f ${build_file} ] && rm $build_file
@@ -49,12 +49,12 @@ compile () {
 }
 
 if [[ $# -eq 0 ]]; then
-  inotifywait -m -r -e close_write --format '%w%f' "/input" | while read FILE
+  inotifywait -m -r -e close_write --format '%w%f' "${COMPILER_HOME}/input" | while read FILE
   do
     compile $FILE
   done
 fi
 
 if [[ $# -eq 1 ]]; then
-  compile /input/$1
+  compile ${COMPILER_HOME}/input/$1
 fi
