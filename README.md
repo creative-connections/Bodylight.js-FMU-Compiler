@@ -1,10 +1,11 @@
 # Bodylight.js FMU Compiler
 
-This repository contains scripts and configuration facilitating compilation of FMU files with embedded
-source code to Javascript. It contains basic HTML and Python script as CGI script to support compilation on Linux platform with (EMSDK, GlibC,...).
-It contains Docker container to run this compiler in any platform.
+**FMI** stands for [Functional Mockup Interface standard](https://fmi-standard.org/) for interchanging dynamic models. **FMU** stands for Functional Mockup Unit - standard encapsulated interoperable model. This repository contains scripts and configuration facilitating compilation of FMU file to Javascript with embedded WebAssembly. Such javascript conforms FMI standard and can be directly accessed by the FMI API. However, we recommend to use Bodylight.js-Components to create rich interactive web simulator and control FMI using higher level API.
 
-See [Bodylight-Virtualmachine](https://github.com/creative-connections/Bodylight-VirtualMachine) for a sample configuration on Scientific Linux 7.x.
+This repository also contains basic HTML and Python script as CGI script to support compilation on Linux platform with (EMSDK, GlibC,...).
+A basic docker container is included to run this compiler on any platform.
+
+See [Bodylight-Virtualmachine](https://github.com/creative-connections/Bodylight-VirtualMachine) for a sample configuration in Scientific Linux 7.x.
 
 Currently supports FMUs exported from Dymola (with sources) and OpenModelica.
 
@@ -128,3 +129,14 @@ docker run \
 
 After the compilation finishes, `input/name.fmu` is deleted and the resulting `name.js` file is copied to `output`. Along with the compilation log `name.log`.
 
+# Examples
+
+The following models were converted to web-based simulators using FMU compiler.
+* [Simple Circulation](http://www.physiome.cz/en/simple-circulation/) - model published as part of Physiolibrary
+  * Kulhánek T, Tribula M, Kofránek J, Mateják M: Simple models of the cardiovascular system for educational and research purposes. MEFANET Journal 2014; 2(2); ISSN:1805-9171. Available at WWW: http://mj.mefanet.cz/mj-04140914.
+* [Nefron Simulation](http://www.physiome.cz/apps/Nephron/) - model and Bodylight.js technology published as 
+  * ŠILAR, Jan, David POLÁK, Arnošt MLÁDEK, Filip JEŽEK, Theodore W KURTZ, Stephen E DICARLO, Jan ŽIVNÝ a Jiri KOFRANEK. Development of In-Browser Simulators for Medical Education: Introduction of a Novel Software Toolchain. Journal of Medical Internet Research [online]. 2019, 21(7) [cit. 2019-11-25]. DOI: 10.2196/14160. ISSN 1438-8871. Dostupné z: https://www.jmir.org/2019/7/e14160
+* [Bodlight Scenarios](https://bodylight.physiome.cz/Bodylight-Scenarios) - simulators using web components. Section of hemodynamics, blood-gases, iron metabolism and virtual body preparing for publication
+* [Buddy](http://physiome.cz/buddy/) - experimental simulator of most complex model of physiology [Physiomodel](https://www.physiomodel.org) 
+
+The simple and medium size models compile into Javascript with size 0.5 MB - 2 MB. The embedded [WebAssembly](https://webassembly.org/) is supported by 4 major web browsers (Firefox,Chrome,Ms Edge,Safari). The simulation is nearly native speed (1.5x or 2x slower). One drawback is memory limit, which may prevent to run some of the most complex model (see Buddy above) on some mobile devices.
