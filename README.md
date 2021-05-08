@@ -1,20 +1,19 @@
 # Bodylight.js FMU Compiler
 
-This is scripts facilitating compilation of FMU files with embedded
-source code to JavaScript.
-
-It contains basic HTML and Python script as CGI script to support compulation on Linux platform with (EMSDK, GlibC,...).
+This repository contains scripts and configuration facilitating compilation of FMU files with embedded
+source code to Javascript. It contains basic HTML and Python script as CGI script to support compilation on Linux platform with (EMSDK, GlibC,...).
 It contains Docker container to run this compiler in any platform.
 
-See [Bodylight-Virtualmachine](https://github.com/creative-connections/Bodylight-VirtualMachine) for a sample configuration on SL 7.x platform.
+See [Bodylight-Virtualmachine](https://github.com/creative-connections/Bodylight-VirtualMachine) for a sample configuration on Scientific Linux 7.x.
 
 Currently supports FMUs exported from Dymola (with sources) and OpenModelica.
 
-To use Bodylight.js-FMU-Compiler, use one of these options:
+To use Bodylight.js-FMU-Compiler, choose one of these options:
 1. compiler in virtual machine - Vagrant tool and VirtualBox is needed
 2. compiler in local environment - needs to install EMSDK,GLIBC and PYTHON3 manually
 3. compiler in docker - needs docker to be installed in environment
 
+To fully convert Modelica model to Javascript with WebAssembly see our tutorial at https://bodylight.physiome.cz/Bodylight-docs/tutorial/
 
 ## 1. Compiler in Virtual Machine
 
@@ -30,7 +29,7 @@ Be sure that EMSDK, GLIBC 2.18, Python 3 and CMake are installed e.g.
 - Python3 - use your system installer: e.g. `yum install python3` or `apt install python3` or install Miniconda or Anaconda environment (https://www.anaconda.com/products/individual)
 - CMake - use your system installer: e.g. `yum install cmake` or `apt install cmake`
 
-root Bodylight.js-FMU-Compiler contains `index.html` and `save-file.py` to support compilation via simple web interface. Make the root of Bodylight.js-FMU-Compiler accessible for Apache web server.
+Bodylight.js-FMU-Compiler contains `index.html` and `save-file.py` to support compilation via simple web interface. Make the root of Bodylight.js-FMU-Compiler accessible for Apache web server, and the simple web form can be used.
 E.g.
 ```
 Alias "/compiler" "/home/vagrant/Bodylight.js-FMU-Compiler/"
@@ -52,7 +51,7 @@ chmod ugo+rwx input output
 
 ## 3. Compiler in Docker Container
 
-It contains Docker container to run this compiler in any platform.
+It contains Docker container to run this compiler in any platform, uses older emsdk image.
 
 ### Windows instructions
 
