@@ -1,7 +1,8 @@
 #!/bin/bash
 
-build_dir="/work/build"
-sources_dir="/work/sources"
+build_dir="/home/vagrant/Bodylight.js-FMU-Compiler/compiler/build"
+fmu_dir="$build_dir/fmu"
+sources_dir="/home/vagrant/Bodylight.js-FMU-Compiler/compiler/sources"
 fmu_dir="$build_dir/fmu"
 
 if [ "$#" -lt 2 ]; then
@@ -22,13 +23,15 @@ if [ -f $zipfile ] ; then
 fi
 
 model_name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulation/@modelIdentifier)")
+cppf1=""
+cppflagsconf="-DOMC_MINIMAL_METADATA=1 -I$sources_dir/fmi"
 
 cp "$fmu_dir/modelDescription.xml" "$build_dir/"
 
 cd "$fmu_dir/sources"
 emconfigure ./configure \
     CFLAGS='-Wno-unused-value -Wno-logical-op-parentheses' \
-    CPPFLAGS='-DOMC_MINIMAL_METADATA=1'
+    CPPFLAGS="-DOMC_MINIMAL_METADATA=1 -I$sources_dir/fmi"
 
 emmake make -Wno-unused-value
 
