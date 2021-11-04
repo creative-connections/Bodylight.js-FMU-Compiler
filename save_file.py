@@ -13,12 +13,13 @@ def fbuffer(f, chunk_size=10000):
         if not chunk: break
         yield chunk
 
-def waitfor(filename,timeout=60):
+def waitfor(filename,timeout=600):
     stop_check = False
     timer = 0
+    #waits until ZIP appeared or timeout is reached
     while not stop_check:
-        time.sleep(5)
-        timer+=5
+        time.sleep(30)
+        timer+=30
         stop_check = os.path.exists(outputdir+filename) or (timer > timeout)
         print('... '+str(timer)+' <br/>')
         sys.stdout.flush()
@@ -27,7 +28,7 @@ def waitfor(filename,timeout=60):
         print(filename + ' detected. <br/>')
 
     else:
-        print('After timeout no '+filename+' appeared. Check configuration,logs. <br/>');
+        print('After timeout no '+filename+' appeared. Check logs to see reason. <br/>');
     sys.stdout.flush()
 
 
@@ -61,8 +62,8 @@ if fileitem.filename:
     fnamelog = fnname + '.log'
     fnamezip = fnname + '.zip'
 
-    waitfor(fnamelog,30)
-    waitfor(fnamezip,120)
+    waitfor(fnamelog,30) #30 seconds for log to appear
+    waitfor(fnamezip,1200) # 20 minutes wait for ZIP with JS
     if (os.path.exists(outputdir+fnamezip)):
         print('FMU Compiler successfull<br/ >Download result: <a href="/compiler/output/'+fnamezip+'">/compiler/output/'+fnamezip+'</a>')
     else:

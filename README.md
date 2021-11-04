@@ -1,8 +1,12 @@
 # Bodylight.js FMU Compiler
 
-**FMI** stands for [Functional Mockup Interface standard](https://fmi-standard.org/) for interchanging dynamic models. **FMU** stands for Functional Mockup Unit - standard encapsulated interoperable model. This repository contains scripts and configuration facilitating compilation of FMU file to Javascript with embedded WebAssembly. Such javascript conforms FMI standard and can be directly accessed by the FMI API. However, we recommend to use Bodylight.js-Components to create rich interactive web simulator and control FMI using higher level API.
+This repository contains scripts and configuration facilitating compilation of FMU file (with source codes in C of compiled Modelica model and solver) to Javascript with embedded WebAssembly. 
+Such compiled javascript allows to access model simulation via FMI API v 2.0 as specified in FMI standard.
+
+We recommend to use Bodylight.js-Components to create rich interactive web simulator using the compiled artifact and control FMI using higher level API.
 
 This repository also contains basic HTML and Python script as CGI script to support compilation on Linux platform with (EMSDK, GlibC,...).
+
 A basic docker container is included to run this compiler on any platform.
 
 See [Bodylight-Virtualmachine](https://github.com/creative-connections/Bodylight-VirtualMachine) for a sample configuration in Scientific Linux 7.x.
