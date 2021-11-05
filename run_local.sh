@@ -18,6 +18,7 @@ else
   export PATH="/home/vagrant/jupyter/bin:$PATH"
 fi
 conda activate
-python3 --version 
+python3 --version
+pip install psutil
 cd $COMPILER_HOME/compiler
 . ./worker.sh
