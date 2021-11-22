@@ -7,28 +7,16 @@ form = cgi.FieldStorage()
 compilerdir = '/home/vagrant/Bodylight.js-FMU-Compiler/input/'
 outputdir = '/home/vagrant/Bodylight.js-FMU-Compiler/output/'
 
-def checkIfProcessRunning(processName):
+def emsdkRunning():
     '''
     Check if there is any running process that contains the given name processName.
     '''
-    print('checking process'+processName)
-    try:
-        import psutil
-        #Iterate over the all the running process
-        for proc in psutil.process_iter():
-            try:
-                # Check if process name contains the given name string.
-                print(proc.name)
-                if processName in proc.name():
-                    print ('match'+processName)
-                    return True
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                print('some exception')
-                pass
-    except ImportError:
-        print('import error')
-        return True
-    return False
+    import os
+    stream = os.popen('ps -axf|grep emsdk|wc -l') #counts processes with emsdk in command line should be 1 or more (1 including grep)
+    output = stream.read()
+    num_emsdk_process = int(output);
+
+    return num_emsdk_process > 1
 
 # Generator to buffer file chunks
 def fbuffer(f, chunk_size=10000):
@@ -45,7 +33,7 @@ def waitfor(filename,timeout=600):
     while not stop_check:
         time.sleep(step)
         timer+=step
-        stop_check = os.path.exists(outputdir+filename) or (timer > timeout)
+        stop_check = os.path.exists(outputdir+filename) or (timer > timeout) or (not emsdkRunning())
         #TODO check process names whether it is still running
         #or (not(checkIfProcessRunning('openmodelica.sh')) or not(checkIfProcessRunning('dymola.sh')))
         print('... '+str(timer)+' <br/>')
@@ -55,7 +43,10 @@ def waitfor(filename,timeout=600):
         print(filename + ' detected. <br/>')
 
     else:
-        print('After timeout no '+filename+' appeared. Check logs to see reason. <br/>');
+        if (emsdkRunning()):
+            print('After timeout no '+filename+' appeared. EMSCRIPTEN still running. Check logs. <br/>')
+        else:
+            print('After timeout no '+filename+' appeared. EMSCRIPTEN stopped. Check logs to see reason. <br/>')
     sys.stdout.flush()
 
 
@@ -91,7 +82,16 @@ if fileitem.filename:
     print(sys.version)
 
     waitfor(fnamelog,30) #30 seconds for log to appear
-    waitfor(fnamezip,1200) # 20 minutes wait for ZIP with JS
+    counter = 0
+    while True:
+        waitfor(fnamezip,1200) # 20 minutes wait for ZIP with JS
+        counter = counter + 1
+        if (os.path.exists(outputdir+fnamezip)):
+            break
+        if not (emsdkRunning()): # the translation is not running
+            break
+        if counter>=6:  #after 6 iteration = 120 minutes
+            break
     if (os.path.exists(outputdir+fnamezip)):
         print('FMU Compiler successfull<br/ >Download result: <a href="/compiler/output/'+fnamezip+'">/compiler/output/'+fnamezip+'</a>')
     else:

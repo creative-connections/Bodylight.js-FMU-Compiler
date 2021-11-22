@@ -24,7 +24,7 @@ model_name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulat
 
 cp "$fmu_dir/modelDescription.xml" "$build_dir/"
 
-
+# 21.11.2021 - TK O2 to O0 - zero optimization, from deprecated (EXTRA_E...) to EXPORTED_RUNTIME_METHODS
 emcc $fmu_dir/sources/all.c \
     sources/glue.c \
     --post-js sources/glue.js \
@@ -36,7 +36,7 @@ emcc $fmu_dir/sources/all.c \
     -o $build_dir/$2.js \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s WASM=1 \
-    -O2 \
+    -O0 \
     -g0 \
     --closure 1 \
     -D linux \
@@ -92,7 +92,7 @@ emcc $fmu_dir/sources/all.c \
         '_snprintf',
         '_calloc',
         '_free']" \
-    -s EXTRA_EXPORTED_RUNTIME_METHODS="[
+    -s EXPORTED_RUNTIME_METHODS="[
         'FS_createFolder',
         'FS_createPath',
         'FS_createDataFile',
