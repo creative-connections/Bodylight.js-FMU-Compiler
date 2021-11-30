@@ -22,7 +22,7 @@ fi
 
 model_name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulation/@modelIdentifier)")
 
-cp "$fmu_dir/modelDescription.xml" "$build_dir/"
+cp "$fmu_dir/modelDescription.xml" "$build_dir/$name.xml"
 
 # 21.11.2021 - TK O2 to O0 - zero optimization, from deprecated (EXTRA_E...) to EXPORTED_RUNTIME_METHODS
 emcc $fmu_dir/sources/all.c \
@@ -135,8 +135,8 @@ emcc $fmu_dir/sources/all.c \
         'addRunDependency',
         'removeRunDependency']";
 
-
-zip -j $zipfile "$build_dir/$name.js" "$build_dir/modelDescription.xml"
-
+if [ -f "$build_dir/$name.js"  ] ; then
+    zip -j $zipfile "$build_dir/$name.js" "$build_dir/$name.xml"
+fi
 #rm "$build_dir/$name.js"
-#rm "$build_dir/modelDescription.xml"
+#rm "$build_dir/$name.xml"

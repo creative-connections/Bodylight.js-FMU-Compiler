@@ -26,12 +26,12 @@ model_name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulat
 cppf1=""
 cppflagsconf="-DOMC_MINIMAL_METADATA=1 -I$sources_dir/fmi"
 
-cp "$fmu_dir/modelDescription.xml" "$build_dir/"
+cp "$fmu_dir/modelDescription.xml" "$build_dir/$name.xml"
 
 cd "$fmu_dir/sources"
 emconfigure ./configure \
     CFLAGS='-Wno-unused-value -Wno-logical-op-parentheses' \
-    CPPFLAGS="-DOMC_MINIMAL_METADATA=1 -I$sources_dir/fmi"
+    CPPFLAGS="-DOMC_MINIMAL_METADATA=1 -I$sources_dir/fmi -I/usr/local/include"
 
 emmake make -Wno-unused-value
 
@@ -41,6 +41,7 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
     "$sources_dir/glue.c" \
     --post-js "$sources_dir/glue.js" \
     -I"$sources_dir/fmi" \
+    -I/usr/local/include \
     -lm \
     -s MODULARIZE=1 \
     -s EXPORT_NAME=$name \
@@ -98,11 +99,14 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
         '_fmi2SetTime',
         '_fmi2SetupExperiment',
         '_fmi2Terminate',
+        '_cvode_solver_deinitial',
+        '_cvode_solver_fmi_step',
+        '_cvode_solver_initial',
         '_createFmi2CallbackFunctions',
         '_snprintf',
         '_calloc',
         '_free']" \
-    -s EXTRA_EXPORTED_RUNTIME_METHODS="[
+    -s EXPORTED_RUNTIME_METHODS="[
         'FS_createFolder',
         'FS_createPath',
         'FS_createDataFile',
@@ -142,10 +146,15 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
         'writeStringToMemory',
         'writeArrayToMemory',
         'writeAsciiToMemory',
+        '_cvode_solver_deinitial',
+        '_cvode_solver_fmi_step',
+        '_cvode_solver_initial',
         'addRunDependency',
         'removeRunDependency']";
 
-zip -j $zipfile "$fmu_dir/$name.js" "$build_dir/modelDescription.xml"
+if [ -f "$fmu_dir/$name.js"  ] ; then
+    zip -j $zipfile "$fmu_dir/$name.js" "$build_dir/$name.xml"
+fi
 
 rm "$fmu_dir/$name.js"
-rm "$build_dir/modelDescription.xml"
+rm "$build_dir/$name.xml"
