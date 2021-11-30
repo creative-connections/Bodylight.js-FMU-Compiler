@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo script version 2
 build_dir="/home/vagrant/Bodylight.js-FMU-Compiler/compiler/build"
 fmu_dir="$build_dir/fmu"
 sources_dir="/home/vagrant/Bodylight.js-FMU-Compiler/compiler/sources"
@@ -48,9 +49,10 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
     -o "$name.js" \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s WASM=1 \
-    -O2 \
+    -O0 \
     -g0 \
     --closure 1 \
+    -s LLD_REPORT_UNDEFINED \
     -s SINGLE_FILE=1 \
     -s ASSERTIONS=2 \
     -s RESERVED_FUNCTION_POINTERS=50 \
@@ -146,9 +148,9 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
         'writeStringToMemory',
         'writeArrayToMemory',
         'writeAsciiToMemory',
-        '_cvode_solver_deinitial',
-        '_cvode_solver_fmi_step',
-        '_cvode_solver_initial',
+        'cvode_solver_deinitial',
+        'cvode_solver_fmi_step',
+        'cvode_solver_initial',
         'addRunDependency',
         'removeRunDependency']";
 

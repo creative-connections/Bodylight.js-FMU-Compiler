@@ -12,11 +12,13 @@ def emsdkRunning():
     Check if there is any running process that contains the given name processName.
     '''
     import os
-    stream = os.popen('ps -axf|grep emsdk|wc -l') #counts processes with emsdk in command line should be 1 or more (1 including grep)
+    stream = os.popen('ps -axf|grep [e]msdk|wc -l') #counts processes with emsdk in command line should be 1 or more (1 including grep)
+    #stream2 = os.popen('ps -axf|grep [e]msdk') #counts processes with emsdk in command line should be 1 or more (1 including grep)
     output = stream.read()
-    num_emsdk_process = int(output);
-
-    return num_emsdk_process > 1
+    #output2 = stream2.read()
+    num_emsdk_process = int(output)
+    #print("emsdk processes:"+output2)
+    return num_emsdk_process > 0
 
 # Generator to buffer file chunks
 def fbuffer(f, chunk_size=10000):
@@ -95,7 +97,7 @@ if fileitem.filename:
     if (os.path.exists(outputdir+fnamezip)):
         print('FMU Compiler successfull<br/ >Download result: <a href="/compiler/output/'+fnamezip+'">/compiler/output/'+fnamezip+'</a>')
     else:
-        print('failed. See logs')
+        print('failed. See logs <a href="/compiler/output/'+fnamelog+'">/compiler/output/'+fnamelog+'</a>')
     print('<br/>All results and logs:<a href="/compiler/output/">/compiler/output/</a>')
 
 else:
