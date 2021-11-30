@@ -101,9 +101,6 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
         '_fmi2SetTime',
         '_fmi2SetupExperiment',
         '_fmi2Terminate',
-        '_cvode_solver_deinitial',
-        '_cvode_solver_fmi_step',
-        '_cvode_solver_initial',
         '_createFmi2CallbackFunctions',
         '_snprintf',
         '_calloc',
@@ -148,9 +145,6 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
         'writeStringToMemory',
         'writeArrayToMemory',
         'writeAsciiToMemory',
-        'cvode_solver_deinitial',
-        'cvode_solver_fmi_step',
-        'cvode_solver_initial',
         'addRunDependency',
         'removeRunDependency']";
 
