@@ -1,12 +1,33 @@
 <html><body>
 <h1> Bodylight.js FMU Compiler</h1>
 <p>this helper web app is to compile FMU to JS (with WebAssembly).</p>
-<p>1. create FMU</p>
+<p>1. (optionally) select compiler flags (default -O3 --closure 0)</p>
+<iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>
+<form action="setflags.py" method="post" target="dummyframe">
+    <p>Please select optimization rate -Ox:</p>
+    <input type="radio" id="o0" name="optimization" value="-O0" />
+    <label for="o0">No optimization (-O0 no optimization, stable and fast compilation)</label><br>
+    <input type="radio" id="o2" name="optimization" value="-O2" />
+    <label for="o2">Optimization (-O2 produces reduced size,memory and speed code)</label><br>
+    <input type="radio" id="o3" name="optimization" value="-O3" checked="checked" />
+    <label for="o3">Optimization (-O3 produces reduced size,memory and speed code, recommended for release build)</label><br>
+
+    <br>
+
+    <p>Please select code closure level --closure x:</p>
+    <input type="radio" id="c0" name="closure" value="--closure 0" checked="checked" />
+    <label for="c0">--closure 0, no closure - recomended for optimization O2, O3, ...</label><br>
+    <input type="radio" id="c1" name="closure" value="--closure 1" />
+    <label for="c1">--closure 1, reduces size of JS and WASM but also reduces optimization capabilities (O2,O3)</label><br>
+    <input type="radio" id="c2" name="closure" value="--closure 2" />
+    <label for="c2">--closure 2, reduces more size of JS and WASM but also reduces optimization capabilities (O2,O3)</label><br>
+    <input type="submit" value="Set compilation flags" />
+</form>
 <p>2. Upload FMU file with C sources from Dymola (or OpenModelica):</p>
 <form enctype="multipart/form-data" action="save_file.py" method="post">
     <p>File: <input type="file" name="file"></p>
-    <p><input type="submit" value="Upload" accept="*.fmu"></p>
+    <p><input type="submit" value="Compile FMU -> JS" accept="*.fmu"></p>
 </form>
-<p>   after upload - you'll see progress - in case of success you can download ZIP from <a href="output"> /output</a> folder.</p>
-<p>   use this ZIP to create web simulator as described in <a href="/scenarios">/scenarios</a></p>
+<p>   After upload - you'll see progress - in case of success you can download ZIP from <a href="output"> /output</a> folder.</p>
+<p>   Use this ZIP to create web simulator.</p>
 </body></html>

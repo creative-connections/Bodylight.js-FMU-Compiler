@@ -5,6 +5,7 @@ compile () {
   basename="${filename%.*}"
 
   log="${COMPILER_HOME}/output/${basename}.log"
+  flags="${COMPILER_HOME}/output/flags"
   build_file="build/${basename}.zip"
   output_file="${COMPILER_HOME}/output/${basename}.zip"
 
@@ -13,6 +14,11 @@ compile () {
   [ -f ${output_file} ] && rm $output_file
 
   echo "=== Processing file ${FILE} ===" | tee -a $log
+
+  if [ ! -f ${flags} ]; then
+    echo "creating default flags file" | tee -a $log
+    echo "-O3 --closure 0" > ${flags}
+  fi
 
   mime=$(file ${FILE} -b --mime-type)
   if [ $mime != "application/zip" ];then

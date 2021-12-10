@@ -49,9 +49,7 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
     -o "$name.js" \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s WASM=1 \
-    -O0 \
     -g0 \
-    --closure 1 \
     -s LLD_REPORT_UNDEFINED \
     -s SINGLE_FILE=1 \
     -s ASSERTIONS=2 \
@@ -146,7 +144,8 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
         'writeArrayToMemory',
         'writeAsciiToMemory',
         'addRunDependency',
-        'removeRunDependency']";
+        'removeRunDependency']" \
+     $(< ../output/flags);
 
 if [ -f "$fmu_dir/$name.js"  ] ; then
     zip -j $zipfile "$fmu_dir/$name.js" "$build_dir/$name.xml"

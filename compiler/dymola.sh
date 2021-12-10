@@ -1,6 +1,7 @@
 #!/bin/bash
 #set -x
 build_dir="build"
+#flags_file="../output/flags"
 fmu_dir="$build_dir/fmu"
 
 if [ "$#" -lt 2 ]; then
@@ -26,6 +27,7 @@ cp "$fmu_dir/modelDescription.xml" "$build_dir/$name.xml"
 
 # 21.11.2021 - TK O2 to O0 - zero optimization, from deprecated (EXTRA_E...) to EXPORTED_RUNTIME_METHODS
 # 3.12.2021 TK O0 produced outofmemory in chrome for some models - try O3, closure 0 (instead of closure 1)
+# 9.12.2021 TK removed -O3 --closure 0 - now in flags file - can be set externally
 emcc $fmu_dir/sources/all.c \
     sources/glue.c \
     --post-js sources/glue.js \
@@ -37,9 +39,7 @@ emcc $fmu_dir/sources/all.c \
     -o $build_dir/$2.js \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s WASM=1 \
-    -O3 \
     -g0 \
-    --closure 0 \
     -D linux \
     -s ASSERTIONS=2 \
     -s SINGLE_FILE=1 \
@@ -134,7 +134,8 @@ emcc $fmu_dir/sources/all.c \
         'writeArrayToMemory',
         'writeAsciiToMemory',
         'addRunDependency',
-        'removeRunDependency']";
+        'removeRunDependency']" \
+    $(< ../output/flags);
 
 if [ -f "$build_dir/$name.js"  ] ; then
     zip -j $zipfile "$build_dir/$name.js" "$build_dir/$name.xml"
