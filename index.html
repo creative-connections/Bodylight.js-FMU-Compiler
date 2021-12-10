@@ -5,21 +5,19 @@
 <form action="setflags.py" method="post" target="dummyframe">
     <p>Please select optimization rate -Ox:</p>
     <input type="radio" id="o0" name="optimization" value="-O0" />
-    <label for="o0">No optimization (-O0 no optimization, stable and fast compilation)</label><br>
+    <label for="o0">-O0 - no optimization (-O0 no optimization, stable and fast compilation)</label><br>
     <input type="radio" id="o2" name="optimization" value="-O2" />
-    <label for="o2">Optimization (-O2 produces reduced size,memory and speed code)</label><br>
+    <label for="o2">-O2 - optimization level 2 reduces size,memory and improves speed</label><br>
     <input type="radio" id="o3" name="optimization" value="-O3" checked="checked" />
-    <label for="o3">Optimization (-O3 produces reduced size,memory and speed code, recommended for release build)</label><br>
+    <label for="o3">-O3 (default) - optimization level 3 reduces size,memory and improves speed, recommended for release build</label><br>
 
     <br>
 
     <p>Please select code closure level --closure x:</p>
     <input type="radio" id="c0" name="closure" value="--closure 0" checked="checked" />
-    <label for="c0">--closure 0, no closure - recomended for optimization O2, O3, ...</label><br>
+    <label for="c0">--closure 0 (default), no closure</label><br>
     <input type="radio" id="c1" name="closure" value="--closure 1" />
-    <label for="c1">--closure 1, reduces size of JS and WASM but also reduces optimization capabilities (O2,O3)</label><br>
-    <input type="radio" id="c2" name="closure" value="--closure 2" />
-    <label for="c2">--closure 2, reduces more size of JS and WASM but also reduces optimization capabilities (O2,O3)</label><br>
+    <label for="c1">--closure 1, reduces size of JS and WASM (5-10%) but limits optimization capabilities (flags -O2,-O3)</label><br>
     <input type="submit" value="Set compilation flags" />
 </form>
 <iframe name="dummyframe" id="dummyframe" height="30"></iframe>
