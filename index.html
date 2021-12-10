@@ -2,7 +2,6 @@
 <h1> Bodylight.js FMU Compiler</h1>
 <p>this helper web app is to compile FMU to JS (with WebAssembly).</p>
 <p>1. (optionally) select compiler flags (default -O3 --closure 0)</p>
-<iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>
 <form action="setflags.py" method="post" target="dummyframe">
     <p>Please select optimization rate -Ox:</p>
     <input type="radio" id="o0" name="optimization" value="-O0" />
@@ -23,6 +22,8 @@
     <label for="c2">--closure 2, reduces more size of JS and WASM but also reduces optimization capabilities (O2,O3)</label><br>
     <input type="submit" value="Set compilation flags" />
 </form>
+<iframe name="dummyframe" id="dummyframe" height="30"></iframe>
+
 <p>2. Upload FMU file with C sources from Dymola (or OpenModelica):</p>
 <form enctype="multipart/form-data" action="save_file.py" method="post">
     <p>File: <input type="file" name="file"></p>
