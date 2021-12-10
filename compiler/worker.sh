@@ -16,8 +16,11 @@ compile () {
   echo "=== Processing file ${FILE} ===" | tee -a $log
 
   if [ ! -f ${flags} ]; then
-    echo "creating default flags file" | tee -a $log
+    echo "creating default flags file with: -O3 --closure 0" | tee -a $log
     echo "-O3 --closure 0" > ${flags}
+  else
+    echo "flags file:"
+    cat ${flags} | tee -a $log
   fi
 
   mime=$(file ${FILE} -b --mime-type)
