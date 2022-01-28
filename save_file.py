@@ -70,7 +70,7 @@ if fileitem.filename:
     for chunk in fbuffer(fileitem.file):
       f.write(chunk)
     f.close()
-    message = 'The file "' + fn + '" was uploaded successfully'
+    message = 'The file "' + fn + '" was uploaded successfully. 2.1.10cm'
 
 
     print("Content-type: text/html\r\n\r\n")
@@ -85,21 +85,23 @@ if fileitem.filename:
 
     waitfor(fnamelog,30) #30 seconds for log to appear
     counter = 0
-    while True:
+    waitforzipfile = True
+    while waitforzipfile:
         waitfor(fnamezip,1200) # 20 minutes wait for ZIP with JS
         counter = counter + 1
         if (os.path.exists(outputdir+fnamezip)):
-            break
+            waitforzipfile = False
         if not (emsdkRunning()): # the translation is not running
-            break
+            waitforzipfile = False
         if counter>=6:  #after 6 iteration = 120 minutes
-            break
+            waitforzipfile = False
+
     if (os.path.exists(outputdir+fnamezip)):
         print('FMU Compiler successfull<br/ >Download result: <a href="/compiler/output/'+fnamezip+'">/compiler/output/'+fnamezip+'</a>')
     else:
         print('failed. See logs <a href="/compiler/output/'+fnamelog+'">/compiler/output/'+fnamelog+'</a>')
     print('<br/>All results and logs:<a href="/compiler/output/">/compiler/output/</a>')
-
+    sys.stdout.flush()
 else:
     message = 'No file was uploaded'
     print("Content-type: text/html\r\n\r\n")
