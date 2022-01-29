@@ -101,6 +101,7 @@ if fileitem.filename:
     else:
         print('failed. See logs <a href="/compiler/output/'+fnamelog+'">/compiler/output/'+fnamelog+'</a>')
     print('<br/>All results and logs:<a href="/compiler/output/">/compiler/output/</a>')
+    print('<br/>To compile other FMU, go back to:<a href="/compiler/">/compiler/</a>')
     sys.stdout.flush()
 else:
     message = 'No file was uploaded'
