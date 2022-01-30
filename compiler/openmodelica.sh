@@ -1,6 +1,6 @@
 #!/bin/bash
-
-echo script version 2
+set -x
+echo script version 2.a
 build_dir="/home/vagrant/Bodylight.js-FMU-Compiler/compiler/build"
 fmu_dir="$build_dir/fmu"
 sources_dir="/home/vagrant/Bodylight.js-FMU-Compiler/compiler/sources"
@@ -37,7 +37,7 @@ emconfigure ./configure \
 emmake make -Wno-unused-value
 
 cd "$fmu_dir"
-
+cat "$fmu_dir"/../../output/flags
 emcc "$fmu_dir/binaries/linux64/$model_name.so" \
     "$sources_dir/glue.c" \
     --post-js "$sources_dir/glue.js" \
@@ -145,7 +145,7 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
         'writeAsciiToMemory',
         'addRunDependency',
         'removeRunDependency']" \
-     $(< ../output/flags);
+     $(< ../../output/flags);
 
 if [ -f "$fmu_dir/$name.js"  ] ; then
     zip -j $zipfile "$fmu_dir/$name.js" "$build_dir/$name.xml"

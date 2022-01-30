@@ -1,7 +1,7 @@
 <html><body>
 <h1> Bodylight.js FMU Compiler</h1>
 <p>this helper web app is to compile FMU to JS (with WebAssembly).</p>
-<p>1. (optionally) select compiler flags (default -O3 --closure 0)</p>
+<p>1.a (optionally) select compiler flags (default -O3 --closure 0)</p>
 <form action="setflags.py" method="post" target="dummyframe">
     <p>Please select optimization rate -Ox:</p>
     <input type="radio" id="o0" name="optimization" value="-O0" />
@@ -18,7 +18,7 @@
     <label for="c0">--closure 0 (default), no closure</label><br>
     <input type="radio" id="c1" name="closure" value="--closure 1" />
     <label for="c1">--closure 1, reduces size of JS and WASM (5-10%) but limits optimization capabilities (flags -O2,-O3)</label><br>
-    <input type="submit" value="Set compilation flags" />
+<p>1.b if flags selected, press button: <input type="submit" value="Set compilation flags" />
 </form>
 <iframe name="dummyframe" id="dummyframe" height="30"></iframe>
 
