@@ -24,6 +24,7 @@ if [ -f $zipfile ] ; then
 fi
 
 model_name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulation/@modelIdentifier)")
+# "
 cppf1=""
 cppflagsconf="-DOMC_MINIMAL_METADATA=1 -I$sources_dir/fmi"
 
@@ -37,7 +38,7 @@ emconfigure ./configure \
 emmake make -Wno-unused-value
 
 cd "$fmu_dir"
-cat "$fmu_dir"/../../output/flags
+cat "$fmu_dir"/../../../output/flags
 emcc "$fmu_dir/binaries/linux64/$model_name.so" \
     "$sources_dir/glue.c" \
     --post-js "$sources_dir/glue.js" \
@@ -50,8 +51,8 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s WASM=1 \
     -g0 \
-    -s LLD_REPORT_UNDEFINED \
     -s SINGLE_FILE=1 \
+    -s LLD_REPORT_UNDEFINED \
     -s ASSERTIONS=2 \
     -s RESERVED_FUNCTION_POINTERS=50 \
     -s "BINARYEN_METHOD='native-wasm'" \
@@ -122,9 +123,9 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
         'ALLOC_STATIC',
         'ALLOC_DYNAMIC',
         'ALLOC_NONE',
-        'allocate',
         'getMemory',
         'Pointer_stringify',
+        'allocate',
         'AsciiToString',
         'stringToAscii',
         'UTF8ArrayToString',
@@ -145,7 +146,11 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
         'writeAsciiToMemory',
         'addRunDependency',
         'removeRunDependency']" \
-     $(< ../../output/flags);
+     $(< ../../../output/flags);
+     
+# TomasK 31.01.2022: try to removed flags if error happens     'ALLOC_STATIC',        'ALLOC_DYNAMIC',        'ALLOC_NONE',        'getMemory',        'Pointer_stringify',
+#     -s LLD_REPORT_UNDEFINED \
+
 
 if [ -f "$fmu_dir/$name.js"  ] ; then
     zip -j $zipfile "$fmu_dir/$name.js" "$build_dir/$name.xml"
