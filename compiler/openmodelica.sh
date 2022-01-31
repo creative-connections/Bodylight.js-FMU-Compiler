@@ -52,7 +52,6 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
     -s WASM=1 \
     -g0 \
     -s SINGLE_FILE=1 \
-    -s LLD_REPORT_UNDEFINED \
     -s ASSERTIONS=2 \
     -s RESERVED_FUNCTION_POINTERS=50 \
     -s "BINARYEN_METHOD='native-wasm'" \
@@ -150,6 +149,8 @@ emcc "$fmu_dir/binaries/linux64/$model_name.so" \
      
 # TomasK 31.01.2022: try to removed flags if error happens     'ALLOC_STATIC',        'ALLOC_DYNAMIC',        'ALLOC_NONE',        'getMemory',        'Pointer_stringify',
 #     -s LLD_REPORT_UNDEFINED \
+# wasm-ld: error: symbol exported via --export not found: __stop_em_asm
+# wasm-ld: error: symbol exported via --export not found: __start_em_asm
 
 
 if [ -f "$fmu_dir/$name.js"  ] ; then
