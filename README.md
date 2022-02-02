@@ -17,13 +17,13 @@ To use Bodylight.js-FMU-Compiler, choose one of these options:
 To fully convert Modelica model to Javascript with WebAssembly see our tutorial at https://bodylight.physiome.cz/Bodylight-docs/tutorial/
 
 ## 1. Compiler in Virtual Machine
-
+(Recommended)
 Install Bodylight-VirtualMachine using `vagrant` tool and VirtualBox. Instruction at https://github.com/creative-connections/Bodylight-VirtualMachine 
 
 The compiler web service is available at http://localhost:8080/compiler
 
 ## 2. Compiler in Local Environmnet
-
+(on your own risk)
 Be sure that EMSDK, GLIBC 2.18, Python 3 and CMake are installed e.g.
 - https://github.com/emscripten-core/emsdk.git
 - https://ftp.gnu.org/gnu/glibc/glibc-2.18.tar.gz
@@ -51,8 +51,8 @@ chmod ugo+rwx input output
 ```
 
 ## 3. Compiler in Docker Container
-
-It contains Docker container to run this compiler in any platform, uses older emsdk image.
+This is not recommended now as it is not maintained due to lack of contributors. 
+This option uses docker container with all required software to run this compiler in any platform, uses older emsdk image.
 
 ### Windows instructions
 
