@@ -10,6 +10,8 @@ fmudiff_dir="`pwd`/fmudiff"
 # 2. check arguments
 if [ "$#" -lt 2 ]; then
     echo "Usage: $0 INPUT_FMU EXPORT_NAME"
+    echo "Example: $0 mymodel.fmu mymodel"
+    echo "         will create 'mymodel.zip' file containing 'mymodel.js' with fmu model compiled to webassembly and 'mymodel.xml' with model description."
     exit 1
 fi
 
