@@ -55,7 +55,7 @@ cd $fmu_dir/sources
 #
 emconfigure ./configure \
  CFLAGS='-Wno-unused-value -Wno-logical-op-parentheses' \
- CPPFLAGS="-DRUNTIME_DEPENDENDCIES_LEVEL=all -D BUILD_SHARED_LIBS=OFF -D NEED_CVODE=ON -D CVODE_DIRECTORY=$cvode_dir -I$sources_dir/fmi -I/usr/local/include -I$cvode_include -DWITH_SUNDIALS -DOMC_FMI_RUNTIME=1 -DLINK_SUNDIAL_STATIC=ON"
+ CPPFLAGS="-DRUNTIME_DEPENDENDCIES_LEVEL=all -DWITH_SUNDIALS -DOMC_FMI_RUNTIME=1 -DCVODE_DIRECTORY=$cvode_dir -I$sources_dir/fmi -I/usr/local/include -I$cvode_include"
 
 # 9. make
 #cd $build_dir
@@ -131,6 +131,9 @@ emcc "$sources_dir/glue.c" "$fmu_dir/binaries/linux64/$model_name.so" \
         '_${model_name}_fmi2SetupExperiment',
         '_${model_name}_fmi2Terminate',
         '_createFmi2CallbackFunctions',
+        '_cvode_solver_initial',
+        '_cvode_solver_deinitial',
+        '_cvode_solver_fmi_step',
         '_snprintf',
         '_main',
         '_calloc',
