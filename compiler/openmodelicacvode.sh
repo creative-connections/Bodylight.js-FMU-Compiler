@@ -1,17 +1,18 @@
     #!/bin/bash
 set -x
-echo script version 1
+echo script version 2401 for OM FMU with CVODE
+emcc -v
 # 1. set build dir, source dir for FMU glue files relative to current dir
 build_dir="`pwd`/build"
 fmu_dir="`pwd`/fmu"
 sources_dir="`pwd`/sources"
 fmudiff_dir="`pwd`/fmudiff"
+cvode_dir="`pwd`/lib"
+cvode_include="`pwd`/include"
 
 # 2. check arguments
 if [ "$#" -lt 2 ]; then
     echo "Usage: $0 INPUT_FMU EXPORT_NAME"
-    echo "Example: $0 mymodel.fmu mymodel"
-    echo "         will create 'mymodel.zip' file containing 'mymodel.js' with fmu model compiled to webassembly and 'mymodel.xml' with model description."
     exit 1
 fi
 
@@ -41,8 +42,6 @@ fi
 model_name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulation/@modelIdentifier)")
 
 # 6. set compilation flags
-cppf1=""
-cppflagsconf="-DOMC_MINIMAL_METADATA=1 -I$sources_dir/fmi"
 
 # 7. copy modelDescription.xml to $name.xml - it is used to recognize multiple XMLs in apps.
 cp "$fmu_dir/modelDescription.xml" "$build_dir/$name.xml"
@@ -53,24 +52,27 @@ cd $fmu_dir/sources
 
 #
 emconfigure ./configure \
- CFLAGS='-Wno-unused-value -Wno-logical-op-parentheses' \
- CPPFLAGS="-DRUNTIME_DEPENDENDCIES_LEVEL=all -D BUILD_SHARED_LIBS=OFF -D NEED_CVODE=ON -D CVODE_DIRECTORY=/home/tomas/sundials-6.7.0/buildjs/lib/ -I$sources_dir/fmi -I/usr/local/include -DWITH_SUNDIALS -DOMC_FMI_RUNTIME=1 -DLINK_SUNDIAL_STATIC=ON"
+ CFLAGS="-DBUILD_SHARED_LIBS=OFF -DNEED_CVODE -DCVODE_DIRECTORY=$cvode_dir -DLINK_SUNDIAL_STATIC=1" \
+ CPPFLAGS="-DBUILD_SHARED_LIBS=OFF -DRUNTIME_DEPENDENDCIES_LEVEL=modelica -DNEED_CVODE -DOMC_FMI_RUNTIME=1 -DLINK_SUNDIAL_STATIC=1 -I$sources_dir/fmi -I/usr/local/include -I$cvode_include -DCVODE_DIRECTORY=$cvode_dir"
+ 
+ #-DCVODE_DIRECTORY=$cvode_dir -I$sources_dir/fmi -I/usr/local/include -I$cvode_include"
 
 # 9. make
 #cd $build_dir
-emmake make
+emmake make -Wno-unused-value
 
 ## 10. link and create JS with emcc
-emcc "$sources_dir/glue.c" "$fmu_dir/binaries/linux64/$model_name.so" /home/tomas/sundials-6.7.0/buildjs/lib/libsundials_cvode.a /home/tomas/sundials-6.7.0/buildjs/lib/libsundials_nvecserial.a \
+emcc "$sources_dir/glue.c" "$fmu_dir/binaries/linux64/$model_name.so" $cvode_dir/libsundials_cvode.a $cvode_dir/libsundials_nvecserial.a \
     --post-js "$sources_dir/glue.js" \
     --embed-file $fmu_dir/resources@/ \
     -v \
     -g3 \
     -gsource-map \
     -lm -lsundials_cvode -lsundials_nvecserial \
-    -L/home/tomas/sundials-6.7.0/buildjs/lib/ \
+    -L$cvode_dir \
     -I"$sources_dir/fmi" \
     -I"$fmu_dir/sources" \
+    -I"$cvode_include" \
     -I/usr/local/include \
     -DWITH_SUNDIALS -DOMC_FMI_RUNTIME=1 -DLINK_SUNDIAL_STATIC=ON \
     -s MODULARIZE=1 \
@@ -129,6 +131,9 @@ emcc "$sources_dir/glue.c" "$fmu_dir/binaries/linux64/$model_name.so" /home/toma
         '_${model_name}_fmi2SetupExperiment',
         '_${model_name}_fmi2Terminate',
         '_createFmi2CallbackFunctions',
+        '_cvode_solver_initial',
+        '_cvode_solver_deinitial',
+        '_cvode_solver_fmi_step',
         '_snprintf',
         '_main',
         '_calloc',
