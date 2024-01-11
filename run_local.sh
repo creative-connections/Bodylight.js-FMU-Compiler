@@ -8,6 +8,8 @@ if [ -d /home/vagrant/emsdk ]; then
   cd /home/vagrant/emsdk
 elif [ -d /home/vagrant/emsdk-master ]; then
   cd /home/vagrant/emsdk-master
+elif [ -d /emsdk ]; then  
+  cd /emsdk
 fi
 ./emsdk activate latest
 source ./emsdk_env.sh

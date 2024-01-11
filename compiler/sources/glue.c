@@ -18,3 +18,8 @@ fmi2CallbackFunctions * createFmi2CallbackFunctions(fmi2CallbackLogger logger) {
     memcpy(cbf, &cbf_local, sizeof(*cbf));
     return cbf;
 }
+
+//1.1.2024 TK - have empty main function in order to export runtime addOnPreMain by emscripten
+int main() {
+    return 0;
+}

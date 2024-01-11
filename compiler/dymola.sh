@@ -28,9 +28,9 @@ cp "$fmu_dir/modelDescription.xml" "$build_dir/$name.xml"
 # 21.11.2021 - TK O2 to O0 - zero optimization, from deprecated (EXTRA_E...) to EXPORTED_RUNTIME_METHODS
 # 3.12.2021 TK O0 produced outofmemory in chrome for some models - try O3, closure 0 (instead of closure 1)
 # 9.12.2021 TK removed -O3 --closure 0 - now in flags file - can be set externally
+# 21.12.2023 TK removed --post-js sources/glue.js --bug in emscripten seems to be fixed
 emcc $fmu_dir/sources/all.c \
-    sources/glue.c \
-    --post-js sources/glue.js \
+    sources/glue.c \    
     -Isources/fmi \
     -I$fmu_dir/sources \
     -lm \
