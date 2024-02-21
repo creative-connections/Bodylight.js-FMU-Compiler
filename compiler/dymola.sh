@@ -1,8 +1,9 @@
 #!/bin/bash
-#set -x
+set -x
 build_dir="build"
 #flags_file="../output/flags"
 fmu_dir="$build_dir/fmu"
+sources_dir=`pwd`/sources
 
 if [ "$#" -lt 2 ]; then
     echo "Usage: $0 INPUT_FMU EXPORT_NAME"
@@ -30,8 +31,8 @@ cp "$fmu_dir/modelDescription.xml" "$build_dir/$name.xml"
 # 9.12.2021 TK removed -O3 --closure 0 - now in flags file - can be set externally
 # 21.12.2023 TK removed --post-js sources/glue.js --bug in emscripten seems to be fixed
 emcc $fmu_dir/sources/all.c \
-    sources/glue.c \    
-    -Isources/fmi \
+    sources/glue.c \
+    -I$sources_dir/fmi \
     -I$fmu_dir/sources \
     -lm \
     -s MODULARIZE=1 \
