@@ -180,7 +180,8 @@ emcc "$sources_dir/glue.c" "$build_dir/$name.a" \
         'writeArrayToMemory',\
         'writeAsciiToMemory',\
         'addRunDependency',\
-        'removeRunDependency']"
+        'removeRunDependency',\
+        'HEAPU8']"
 
 # 11. create ZIP file with JS and XML
 if [ -f "$build_dir/$name.js"  ] ; then
