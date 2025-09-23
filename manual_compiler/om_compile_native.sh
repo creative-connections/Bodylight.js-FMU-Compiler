@@ -28,6 +28,9 @@ fi
 mkdir -p "$fmu_dir"
 unzip -q $1 -d "$fmu_dir"
 
+# patch external solvers
+cp -r patch/* "$fmu_dir"
+
 # 4. zip file will be named as argument 2, if it exists, remove first
 name=$2
 echo NAME:$name
@@ -54,6 +57,8 @@ cd $fmu_dir/sources
 #-D SUNDIALS_NVECSERIAL_LIBRARY=$cvode_dir/libsundials_nvecserial.a \
 #-D CVODE_DIRECTORY=$cvode_dir \
 emcmake cmake -S . -B $build_dir \
+-s DISABLE_EXCEPTION_CATCHING=0 \
+-s EMULATE_FUNCTION_POINTER_CASTS=1 \
 -D RUNTIME_DEPENDENCIES_LEVEL=none \
 -D FMI_INTERFACE_HEADER_FILES_DIRECTORY=$cvode_include \
 -D NEED_CVODE=ON \
@@ -73,6 +78,8 @@ echo 6. emcc
 emcc "$sources_dir/glue.c" "$build_dir/$name.a" \
 --post-js "$sources_dir/glue.js" \
 --embed-file $fmu_dir/resources@/ \
+-s DISABLE_EXCEPTION_CATCHING=0 \
+-s EMULATE_FUNCTION_POINTER_CASTS=1 \
 -v \
 -g0 \
 -lsundials_cvode \
