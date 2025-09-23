@@ -33,12 +33,12 @@ IF you don't have docker, but have emsdk installed, activated and configured, th
 ```
 Use the resulting my_model.zip with JS to create Web simulator using bodylight.js 
 
-## 2. Compiler in Virtual Machine
+## 2. Compiler in Virtual Machine with upload/compiler web service
 (Recommended)
 Install Bodylight-VirtualMachine using `vagrant` tool and VirtualBox. Instruction at https://github.com/creative-connections/Bodylight-VirtualMachine 
 The compiler web service is available at http://localhost:8080/compiler
 
-## 3. Compiler in Local Environmnet
+## 3. Compiler in Local Environmnet with upload/compiler web service
 (on your own risk)
 Be sure that EMSDK, GLIBC 2.18, Python 3 and CMake are installed e.g.
 - https://github.com/emscripten-core/emsdk.git
