@@ -14,8 +14,8 @@ cvode_dir="`pwd`/lib_cvode5.4.0"
 cvode_include="`pwd`/include" 
 
 # 2. check arguments
-if [ "$#" -lt 2 ]; then
-    echo "Usage: $0 INPUT_FMU MODEL_NAME"
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 INPUT_FMU"
     exit 1
 fi
 
@@ -32,7 +32,10 @@ unzip -q $1 -d "$fmu_dir"
 cp -r patch/* "$fmu_dir"
 
 # 4. zip file will be named as argument 2, if it exists, remove first
-name=$2
+#name=$2
+#name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulation/@modelIdentifier)")
+name=$(awk 'BEGIN{RS="<CoSimulation";FS="\""} NR>1{for(i=1;i<NF;i++) if($i~/modelIdentifier=/){print $(i+1);exit}}' "$fmu_dir/modelDescription.xml")
+
 echo NAME:$name
 
 zipfile=$current_dir/$name.zip

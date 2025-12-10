@@ -11,9 +11,28 @@ fmudiff_dir="`pwd`/fmudiff"
 cvode_dir="`pwd`/lib_cvode5.4.0"
 cvode_include="`pwd`/include"
 
-if [ "$#" -lt 2 ]; then
-    echo "Usage: $0 INPUT_FMU MODEL_NAME"
-    exit 1
+OPTIMIZED=0
+
+# Parse options
+while getopts ":o" opt; do
+  case "$opt" in
+    o) OPTIMIZED=1 ;;
+    \?) echo "Usage: $0 [-o] input" >&2; exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+# Positional argument: input
+INPUT="$1"
+
+if [ "$OPTIMIZED" -eq 1 ]; then
+  EMCC_FLAGS="$EMCC_BASE_FLAGS -O3 --closure 1"
+  EMCC_MAKE_FLAGS="-O3 -fPIC"
+  EMCC_MAKE_TYPE="Release"
+else
+  EMCC_FLAGS="$EMCC_BASE_FLAGS -O0 --closure 0"
+  EMCC_MAKE_FLAGS="-O0 -fPIC"
+  EMCC_MAKE_TYPE="Debug"
 fi
 
 # Clean and extract
@@ -26,7 +45,10 @@ unzip -q "$1" -d "$fmu_dir"
 # patch external solvers
 cp -r patch/* fmu/
 
-name="$2"
+#name="$2"
+#name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulation/@modelIdentifier)")
+name=$(awk 'BEGIN{RS="<CoSimulation";FS="\""} NR>1{for(i=1;i<NF;i++) if($i~/modelIdentifier=/){print $(i+1);exit}}' "$fmu_dir/modelDescription.xml")
+
 zipfile="$current_dir/$name.zip"
 [ -f "$zipfile" ] && rm "$zipfile"
 
@@ -44,7 +66,7 @@ docker run --rm  -u $(id -u):$(id -g) -v "$current_dir":/src -w /src/fmu/sources
     -D SUNDIALS_CVODE_LIBRARY="/src/lib_cvode5.4.0/libsundials_cvode.a" \
     -D SUNDIALS_NVECSERIAL_LIBRARY="/src/lib_cvode5.4.0/libsundials_nvecserial.a" \
     -D WITH_SUNDIALS=1 -D OMC_FMI_RUNTIME=1 -D LINK_SUNDIAL_STATIC=ON \
-    -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-O0 -fPIC" \
+    -D CMAKE_BUILD_TYPE=$EMCC_MAKE_TYPE -DCMAKE_C_FLAGS="$EMCC_MAKE_FLAGS" \
     -D CMAKE_TOOLCHAIN_FILE=/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
 # Build inside docker
@@ -79,8 +101,7 @@ docker run --rm  -u $(id -u):$(id -g) -v "$current_dir":/src -w /src emscripten/
   -o "/src/build_wasm/$name.js" \
   -sALLOW_MEMORY_GROWTH=1 \
   -sWASM=1 \
-  -O0 \
-  --closure 0 \
+  $EMCC_FLAGS \
   -D Linux \
   -sSINGLE_FILE=1 \
   -sASSERTIONS=2 \
