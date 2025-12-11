@@ -22,22 +22,25 @@ git clone https://github.com/creative-connections/Bodylight.js-FMU-Compiler
 cd Bodylight.js-FMU-Compiler
 cd manual_compiler
 ```
-If you have docker in your environment, then for OpenModelica FMU launch
+For Modelica models in OpenModelica:
+1. you need `docker` in your environment, 
+2. in OMEdit, export model as FMU 2.0 in co-simulation with CVODE solver, with source code and with `--fmiFlags=s:cvode` set in Tools->Options->Simulation->Additional Translation flags
+3. with the resulting `my_model.fmu` launch script
 ```bash
 ./om_compile_docker.sh [-o] my_model.fmu
 ```
-for Dymola FMU (source code export is required) launch
+
+For Modelica models in Dymola.
+1. you need `docker` in your environment, 
+2. in Dymola export model as FMU 2.0 in co-simulation with source code and CVODE solver
+3. with the resulting `my_model.fmu` launch script
 ```bash
 ./dy_compile_docker.sh [-o] my_model.fmu
 ```
 
-`-o` enables compilation optimization, producing smaller and faster code (using `-O3 --clossure 1`), by default disabled.
+Use option `-o` to enable compilation optimization, producing smaller and faster code (using `-O3 --clossure 1`), by default it is disabled.
 
-With local installation of `emsdk`, activate, configure it and launch
-```bash
-./om_compile_native.sh my_model.fmu my_model
-```
-The scripts adds compiled 'JS' into FMU/binaries/wasm32/[my_model].js and creates also ZIP file with JS and XML with model description. Use it with bodylight.js web components.
+The script compiles FMU to 'JS' binary and puts it into FMU/binaries/wasm32/ and creates also ZIP file with JS and XML with model description. Use it with bodylight.js web components.
 
 ## 2. Compiler in Virtual Machine with upload/compiler web service (deprecated)
 (Recommended)
