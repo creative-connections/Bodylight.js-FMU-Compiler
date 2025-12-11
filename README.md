@@ -39,12 +39,12 @@ With local installation of `emsdk`, activate, configure it and launch
 ```
 The scripts adds compiled 'JS' into FMU/binaries/wasm32/[my_model].js and creates also ZIP file with JS and XML with model description. Use it with bodylight.js web components.
 
-## 2. Compiler in Virtual Machine with upload/compiler web service
+## 2. Compiler in Virtual Machine with upload/compiler web service (deprecated)
 (Recommended)
 Install Bodylight-VirtualMachine using `vagrant` tool and VirtualBox. Instruction at https://github.com/creative-connections/Bodylight-VirtualMachine 
 The compiler web service is available at http://localhost:8080/compiler
 
-## 3. Compiler in Local Environmnet with upload/compiler web service
+## 3. Compiler in Local Environmnet with upload/compiler web service (deprecated)
 (on your own risk)
 Be sure that EMSDK, GLIBC 2.18, Python 3 and CMake are installed e.g.
 - https://github.com/emscripten-core/emsdk.git
