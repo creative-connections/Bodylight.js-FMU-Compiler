@@ -1,57 +1,67 @@
 #!/bin/bash
 set -ex
-echo script version 2503 for OM FMU with CVODE compiler to WebAssembly Dockerized
+echo "script version 2503 for FMU (OM/Dymola auto-detect) with CVODE to WebAssembly Dockerized"
 
 # Keep directories relative to host working dir
-current_dir="`pwd`"
-build_dir="`pwd`/build_wasm"
-fmu_dir="`pwd`/fmu"
-sources_dir="`pwd`/jsglue"
-fmudiff_dir="`pwd`/fmudiff"
-cvode_dir="`pwd`/lib_cvode5.4.0"
-cvode_include="`pwd`/include"
+current_dir="$(pwd)"
+build_dir="$current_dir/build_wasm"
+fmu_dir="$current_dir/fmu"
+sources_dir="$current_dir/jsglue"
+fmudiff_dir="$current_dir/fmudiff"
+cvode_dir="$current_dir/lib_cvode5.4.0"
+cvode_include="$current_dir/include"
 
 OPTIMIZED=0
+WEB_IN_FMU=0
 
 # Parse options
-while getopts ":o" opt; do
+while getopts ":ow" opt; do
   case "$opt" in
     o) OPTIMIZED=1 ;;
-    \?) echo "Usage: $0 [-o] input" >&2; exit 1 ;;
+    w) WEB_IN_FMU=1 ;;
+    \?) echo "Usage: $0 [-o] [-w] input.fmu" >&2; exit 1 ;;
   esac
 done
 shift $((OPTIND - 1))
 
 # Positional argument: input
 INPUT="$1"
+if [ -z "$INPUT" ]; then
+  echo "Error: input FMU required" >&2
+  exit 1
+fi
 
 if [ "$OPTIMIZED" -eq 1 ]; then
-  EMCC_FLAGS="$EMCC_BASE_FLAGS -O3 --closure 1"
+  EMCC_FLAGS_BASE="-O3 --closure 1 -g0"
   EMCC_MAKE_FLAGS="-O3 -fPIC"
   EMCC_MAKE_TYPE="Release"
 else
-  EMCC_FLAGS="$EMCC_BASE_FLAGS -O0 --closure 0"
+  EMCC_FLAGS_BASE="-O0 --closure 0"
   EMCC_MAKE_FLAGS="-O0 -fPIC"
   EMCC_MAKE_TYPE="Debug"
 fi
 
 # Clean and extract
-rm -rf "$build_dir"
-rm -rf "$fmu_dir"
-mkdir -p "$fmu_dir"
-mkdir -p "$build_dir"
-unzip -q "$1" -d "$fmu_dir"
+rm -rf "$build_dir" "$fmu_dir"
+mkdir -p "$fmu_dir" "$build_dir"
+unzip -q "$INPUT" -d "$fmu_dir"
 
-# patch external solvers
-cp -r patch/* fmu/
-
-#name="$2"
-#name=$(xmllint "$fmu_dir"/modelDescription.xml --xpath "string(//CoSimulation/@modelIdentifier)")
+# Extract model name and detect tool
 name=$(awk 'BEGIN{RS="<CoSimulation";FS="\""} NR>1{for(i=1;i<NF;i++) if($i~/modelIdentifier=/){print $(i+1);exit}}' "$fmu_dir/modelDescription.xml")
+model_name=$name
+generation_tool=$(awk '/generationTool=/ {gsub(/.*generationTool="|".*/,"",$0);print $0;exit}' "$fmu_dir/modelDescription.xml")
+
+echo "Detected: $generation_tool (model: $name)"
 
 zipfile="$current_dir/$name.zip"
 [ -f "$zipfile" ] && rm "$zipfile"
 
+if [[ "$generation_tool" =~ OpenModelica ]]; then
+  echo "→ OpenModelica build path"
+  
+  # === OPENMODELICA: ALL STEPS TOGETHER ===
+  cp -r patch/* "$fmu_dir/"
+  
 # Patch CMakeLists.txt, add emscripten as a target
 sed -i '/set(FMU_TARGET_SYSTEM_NAME "darwin")/a\
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Emscripten")\
@@ -130,16 +140,133 @@ docker run --rm  -u $(id -u):$(id -g) -v "$current_dir":/src -w /src emscripten/
 'addOnPostRun','intArrayFromString','intArrayToString','writeStringToMemory',\
 'writeArrayToMemory','writeAsciiToMemory','addRunDependency','removeRunDependency','HEAPU8']"
 
-# Package outputs on host side (normal host shell commands)
+elif [[ "$generation_tool" =~ Dymola ]]; then
+  echo "→ Dymola build path"
+  
+  # === DYMOLA: ALL STEPS TOGETHER ===
+docker run --rm  -u $(id -u):$(id -g) -v "$current_dir":/src -w /src emscripten/emsdk \
+emcc /src/fmu/sources/all.c /src/jsglue/glue.c \
+    -I/src/fmu/sources \
+    -I/src/include \
+    -lm \
+    $EMCC_FLAGS \
+    -s WASM=1 \
+    -s SINGLE_FILE=1 \
+    -s MODULARIZE=1 \
+    -s EXPORT_NAME=\"$name\" \
+    -o /src/build_wasm/$name.js \
+    -s ALLOW_MEMORY_GROWTH=1 \
+    -s ASSERTIONS=2 \
+    -s STACK_SIZE=2097152 \
+    -s RESERVED_FUNCTION_POINTERS=20 \
+    -s "BINARYEN_METHOD='native-wasm'" \
+-s EXPORTED_FUNCTIONS="['_${model_name}_fmi2CancelStep',
+'_${model_name}_fmi2CompletedIntegratorStep',
+'_${model_name}_fmi2DeSerializeFMUstate',
+'_${model_name}_fmi2DoStep',
+'_${model_name}_fmi2EnterContinuousTimeMode',
+'_${model_name}_fmi2EnterEventMode',
+'_${model_name}_fmi2EnterInitializationMode',
+'_${model_name}_fmi2ExitInitializationMode',
+'_${model_name}_fmi2FreeFMUstate',
+'_${model_name}_fmi2FreeInstance',
+'_${model_name}_fmi2GetBoolean',
+'_${model_name}_fmi2GetBooleanStatus',
+'_${model_name}_fmi2GetContinuousStates',
+'_${model_name}_fmi2GetDerivatives',
+'_${model_name}_fmi2GetDirectionalDerivative',
+'_${model_name}_fmi2GetEventIndicators',
+'_${model_name}_fmi2GetFMUstate',
+'_${model_name}_fmi2GetInteger',
+'_${model_name}_fmi2GetIntegerStatus',
+'_${model_name}_fmi2GetNominalsOfContinuousStates',
+'_${model_name}_fmi2GetReal',
+'_${model_name}_fmi2GetRealOutputDerivatives',
+'_${model_name}_fmi2GetRealStatus',
+'_${model_name}_fmi2GetStatus',
+'_${model_name}_fmi2GetString',
+'_${model_name}_fmi2GetStringStatus',
+'_${model_name}_fmi2GetTypesPlatform',
+'_${model_name}_fmi2GetVersion',
+'_${model_name}_fmi2Instantiate',
+'_${model_name}_fmi2NewDiscreteStates',
+'_${model_name}_fmi2Reset',
+'_${model_name}_fmi2SerializedFMUstateSize',
+'_${model_name}_fmi2SerializeFMUstate',
+'_${model_name}_fmi2SetBoolean',
+'_${model_name}_fmi2SetContinuousStates',
+'_${model_name}_fmi2SetDebugLogging',
+'_${model_name}_fmi2SetFMUstate',
+'_${model_name}_fmi2SetInteger',
+'_${model_name}_fmi2SetReal',
+'_${model_name}_fmi2SetRealInputDerivatives',
+'_${model_name}_fmi2SetString',
+'_${model_name}_fmi2SetTime',
+'_${model_name}_fmi2SetupExperiment',
+'_${model_name}_fmi2Terminate',
+'_createFmi2CallbackFunctions',
+'_snprintf',
+'_calloc',
+'_malloc',
+'_free']" \
+    -s EXPORTED_RUNTIME_METHODS="[
+'FS_createFolder',
+'FS_createPath',
+'FS_createDataFile',
+'FS_createPreloadedFile',
+'FS_createLazyFile',
+'FS_createLink',
+'FS_createDevice',
+'FS_unlink',
+'addFunction',
+'ccall',
+'cwrap',
+'setValue',
+'getValue',
+'ALLOC_NORMAL',
+'ALLOC_STACK',
+'allocate',
+'AsciiToString',
+'stringToAscii',
+'UTF8ArrayToString',
+'UTF8ToString',
+'stringToUTF8Array',
+'stringToUTF8',
+'lengthBytesUTF8',
+'stackTrace',
+'addOnPreRun',
+'addOnInit',
+'addOnPreMain',
+'addOnExit',
+'addOnPostRun',
+'intArrayFromString',
+'intArrayToString',
+'writeStringToMemory',
+'writeArrayToMemory',
+'writeAsciiToMemory',
+'addRunDependency',
+'removeRunDependency',
+'HEAPU8']";    
+
+else
+  echo "Error: Unknown generationTool '$generation_tool' - must contain 'OpenModelica' or 'Dymola'" >&2
+  exit 1
+fi
+
+# Package outputs (common)
 if [ -f "$build_dir/$name.js" ] ; then
     cp "$fmu_dir/modelDescription.xml" "$build_dir/$name.xml"
     zip -j "$zipfile" "$build_dir/$name.js" "$build_dir/$name.xml"
-    mkdir -p "$fmu_dir/binaries/wasm32"
-    cp "$build_dir/$name.js" "$fmu_dir/binaries/wasm32"
-    (cd "$fmu_dir" && zip -ur ../"$1" binaries/wasm32)
+    
+    if [ "$WEB_IN_FMU" -eq 1 ]; then
+        mkdir -p "$fmu_dir/binaries/wasm32"
+        cp "$build_dir/$name.js" "$fmu_dir/binaries/wasm32"
+        (cd "$fmu_dir" && zip -ur "../$INPUT" binaries/wasm32)
+        echo "JS/WASM added to FMU: $INPUT"
+    else
+        echo "JS/WASM NOT added to FMU (use -w). Standalone zip: $zipfile"
+    fi
 fi
 
-#rm -rf "$build_dir"
-#rm -rf "$fmu_dir"
-
+rm -rf "$build_dir" "$fmu_dir"
 exit 0
