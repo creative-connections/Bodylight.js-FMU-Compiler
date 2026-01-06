@@ -371,7 +371,7 @@
     <Category name="logAll" />
     <Category name="logFmi2Call" />
   </LogCategories>
-  <DefaultExperiment startTime="0.0" stopTime="300.0" tolerance="1e-6" stepSize="0.01"/>
+  <DefaultExperiment startTime="0.0" stopTime="3.0" tolerance="1e-6" stepSize="0.01"/>
   <ModelVariables>
   <!-- Index of variable = "1" -->
   <ScalarVariable

@@ -1,35 +1,29 @@
+<!DOCTYPE html>
 <html>
 <head>
-<title>Web FMI simulator</title>
+<title>Web FMI: PKPD_HemodynamicsMeurs_flatNorm</title>
 <script src="dbs-shared.js"></script>
 <script src="dbs-chartjs.js"></script>
 <style>
-  .w3-row:after,.w3-row:before{content:"";display:table;clear:both}
-  .w3-third,.w3-twothird,.w3-threequarter,.w3-quarter{float:left;width:100%}
-  .w3-twothird{width:66.66666%}
-  .w3-third{width:33.33333%}
+.w3-row:after,.w3-row:before{content:"";display:table;clear:both}
+.w3-third,.w3-twothird{float:left;width:100%}
+.w3-twothird{width:66.66666%}
+.w3-third{width:33.33333%}
 </style>
 </head>
 <body>  
-  <div class="w3-row">
-    <div class="w3-twothird">
-      <h2>Web FMI Simulation</h2>
-  <dbs-fmi id="fmi" 
-  src="PKPD_HemodynamicsMeurs_flatNorm.js" 
-  fminame="PKPD_HemodynamicsMeurs_flatNorm" 
-  guid="{1d4ccc00-2d27-41b0-ae1b-9e8bf1ab544b}" 
-  valuereferences="1,2" 
-  valuelabels="mass,enthalpy"
-  inputs="AorticValve.Pknee,428,1e5,10,t;AorticValve._Roff,431,1e60,10,t"
-  mode="oneshot" starttime="0" stoptime="2" tolerance="1e-9" fstepsize="0.001"></dbs-fmi>
-  <dbs-chartjs4 fromid="fmi" refindex="0" labels="time,mass" timedenom="1"></dbs-chartjs4>
-  <dbs-chartjs4 fromid="fmi" refindex="1" labels="time,enthalpy" timedenom="1"></dbs-chartjs4>
-    </div>
-    <div class="w3-third">
-      <h2>Parameters</h2>
-      <dbs-range id="AorticValve.Pknee" label="AorticValve.Pknee" min="0" max="2" default="0" step="0.1"></dbs-range>
-      <dbs-range id="AorticValve._Roff" label="AorticValve._Roff" min="0.1" max="2" default="1" step="0.1"></dbs-range>
-    </div>
+<div class="w3-row">
+  <div class="w3-twothird">
+    <h2>Web FMI Simulation</h2>
+    <dbs-fmi id="fmi" src="PKPD_HemodynamicsMeurs_flatNorm.js" fminame="PKPD_HemodynamicsMeurs_flatNorm" guid="{1d4ccc00-2d27-41b0-ae1b-9e8bf1ab544b}"
+             valuereferences="1,35" valuelabels="Eetha.substanceMasses[1],der(Eetha.enthalpy)"
+             inputs="" mode="oneshot" starttime="0.0" 
+             stoptime="3.0" tolerance="1e-6" fstepsize="0.01">
+    </dbs-fmi>
   </div>
+  <div class="w3-third">
+    <h2>Parameters</h2>
+  </div>
+</div>
 </body>
 </html>
