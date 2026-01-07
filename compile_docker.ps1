@@ -46,14 +46,12 @@ Expand-Archive -LiteralPath $Input -DestinationPath $fmu_dir -Force
 $modelDescription = Join-Path $fmu_dir "modelDescription.xml"
 
 # Extract model name and generation tool via Docker+awk (avoid installing awk on Windows)
-$name = docker run --rm -v "$current_dir:/src" -w /src alpine \
-    sh -c "awk 'BEGIN{RS=\"<CoSimulation\";FS=\"\\\"\"} NR>1{for(i=1;i<NF;i++) if(\$i~/modelIdentifier=/){print \$(i+1);exit}}' /src/fmu/modelDescription.xml"
-
+$name = docker run --rm -v "${current_dir}:/src" -w /src alpine `
+    sh -c "awk 'BEGIN{RS=\"<CoSimulation\";FS=\"`\"`"} NR>1{for(i=1;i<NF;i++) if(\$i~/modelIdentifier=/){print \$(i+1);exit}}' /src/fmu/modelDescription.xml"
 $model_name = $name
 
-$generation_tool = docker run --rm -v "$current_dir:/src" -w /src alpine \
+$generation_tool = docker run --rm -v "${current_dir}:/src" -w /src alpine `
     sh -c "awk '/generationTool=/ {gsub(/.*generationTool=\"|\".*/,\"\",\$0);print \$0;exit}' /src/fmu/modelDescription.xml"
-
 Write-Host "Detected: $generation_tool (model: $name)"
 
 $zipfile = Join-Path $current_dir "$name.zip"
@@ -66,13 +64,13 @@ if ($generation_tool -match "OpenModelica") {
     Copy-Item -Path (Join-Path $current_dir "patch\*") -Destination $fmu_dir -Recurse -Force
 
     # Patch CMakeLists.txt (using sed via Docker)
-    docker run --rm -v "$current_dir:/src" alpine \
-        sh -c "sed -i '/set(FMU_TARGET_SYSTEM_NAME \"darwin\")/a\
+docker run --rm -v "${current_dir}:/src" alpine `
+    sh -c "sed -i '/set(FMU_TARGET_SYSTEM_NAME \"darwin\")/a\
 elseif(\${CMAKE_SYSTEM_NAME} STREQUAL \"Emscripten\")\
   set(FMU_TARGET_SYSTEM_NAME \"emscripten\")' /src/fmu/sources/CMakeLists.txt"
 
     # emcmake cmake
-    docker run --rm -v "$current_dir:/src" -w /src/fmu/sources emscripten/emsdk `
+    docker run --rm -v "${current_dir}:/src" -w /src/fmu/sources emscripten/emsdk `
       emcmake cmake -S . -B "/src/build_wasm" `
         -D RUNTIME_DEPENDENCIES_LEVEL=none `
         -D FMI_INTERFACE_HEADER_FILES_DIRECTORY="/src/include" `
@@ -84,15 +82,15 @@ elseif(\${CMAKE_SYSTEM_NAME} STREQUAL \"Emscripten\")\
         -D CMAKE_TOOLCHAIN_FILE=/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
     # Build
-    docker run --rm -v "$current_dir:/src" -w /src/fmu/sources emscripten/emsdk `
+    docker run --rm -v "${current_dir}:/src" -w /src/fmu/sources emscripten/emsdk `
       cmake --build /src/build_wasm
 
     # Version
-    docker run --rm -v "$current_dir:/src" -w /src emscripten/emsdk `
+    docker run --rm -v "${current_dir}:/src" -w /src emscripten/emsdk `
       emcc --version
 
     # Link
-    docker run --rm -v "$current_dir:/src" -w /src emscripten/emsdk `
+    docker run --rm -v "${current_dir}:/src" -w /src emscripten/emsdk `
       emcc "/src/jsglue/glue.c" "/src/build_wasm/$name.a" `
       --post-js "/src/jsglue/glue.js" `
       --embed-file "/src/fmu/resources@/" `
@@ -117,33 +115,33 @@ elseif(\${CMAKE_SYSTEM_NAME} STREQUAL \"Emscripten\")\
       -sASSERTIONS=2 `
       -sRESERVED_FUNCTION_POINTERS=80 `
       -s"BINARYEN_METHOD='native-wasm'" `
-      -sEXPORTED_FUNCTIONS="['_CVodeCreate','_fmi2DoStep',\
-'_fmi2Instantiate','_fmi2CompletedIntegratorStep','_fmi2DeSerializeFMUstate',\
-'_fmi2EnterContinuousTimeMode','_fmi2EnterEventMode','_fmi2EnterInitializationMode',\
-'_fmi2ExitInitializationMode','_fmi2FreeFMUstate','_fmi2FreeInstance','_fmi2GetBoolean',\
-'_fmi2GetBooleanStatus','_fmi2GetContinuousStates','_fmi2GetDerivatives',\
-'_fmi2GetDirectionalDerivative','_fmi2GetEventIndicators','_fmi2GetFMUstate',\
-'_fmi2GetInteger','_fmi2GetIntegerStatus','_fmi2GetNominalsOfContinuousStates',\
-'_fmi2GetReal','_fmi2GetRealOutputDerivatives','_fmi2GetRealStatus','_fmi2GetStatus',\
-'_fmi2GetString','_fmi2GetStringStatus','_fmi2GetTypesPlatform','_fmi2GetVersion',\
-'_fmi2NewDiscreteStates','_fmi2SerializedFMUstateSize','_fmi2SerializeFMUstate',\
-'_fmi2SetBoolean','_fmi2SetContinuousStates','_fmi2SetDebugLogging','_fmi2SetFMUstate',\
-'_fmi2SetInteger','_fmi2SetReal','_fmi2SetRealInputDerivatives','_fmi2SetString',\
-'_fmi2SetTime','_fmi2SetupExperiment','_fmi2Terminate','_fmi2Reset','_createFmi2CallbackFunctions',\
-'_cvode_solver_initial','_cvode_solver_deinitial','_cvode_solver_fmi_step',\
+      -sEXPORTED_FUNCTIONS="['_CVodeCreate','_fmi2DoStep',`
+'_fmi2Instantiate','_fmi2CompletedIntegratorStep','_fmi2DeSerializeFMUstate',`
+'_fmi2EnterContinuousTimeMode','_fmi2EnterEventMode','_fmi2EnterInitializationMode',`
+'_fmi2ExitInitializationMode','_fmi2FreeFMUstate','_fmi2FreeInstance','_fmi2GetBoolean',`
+'_fmi2GetBooleanStatus','_fmi2GetContinuousStates','_fmi2GetDerivatives',`
+'_fmi2GetDirectionalDerivative','_fmi2GetEventIndicators','_fmi2GetFMUstate',`
+'_fmi2GetInteger','_fmi2GetIntegerStatus','_fmi2GetNominalsOfContinuousStates',`
+'_fmi2GetReal','_fmi2GetRealOutputDerivatives','_fmi2GetRealStatus','_fmi2GetStatus',`
+'_fmi2GetString','_fmi2GetStringStatus','_fmi2GetTypesPlatform','_fmi2GetVersion',`
+'_fmi2NewDiscreteStates','_fmi2SerializedFMUstateSize','_fmi2SerializeFMUstate',`
+'_fmi2SetBoolean','_fmi2SetContinuousStates','_fmi2SetDebugLogging','_fmi2SetFMUstate',`
+'_fmi2SetInteger','_fmi2SetReal','_fmi2SetRealInputDerivatives','_fmi2SetString',`
+'_fmi2SetTime','_fmi2SetupExperiment','_fmi2Terminate','_fmi2Reset','_createFmi2CallbackFunctions',`
+'_cvode_solver_initial','_cvode_solver_deinitial','_cvode_solver_fmi_step',`
 '_snprintf','_main','_calloc','_malloc','_free']" `
-      -sEXPORTED_RUNTIME_METHODS="['FS_createPath','FS_createDataFile',\
-'FS_createPreloadedFile','FS_createLazyFile','FS_createDevice','FS_unlink','addFunction',\
-'ccall','cwrap','setValue','getValue','ALLOC_NORMAL','ALLOC_STACK','AsciiToString',\
-'stringToAscii','UTF8ArrayToString','UTF8ToString','stringToUTF8Array','stringToUTF8',\
-'lengthBytesUTF8','stackTrace','addOnPreRun','addOnInit','addOnPreMain','addOnExit',\
-'addOnPostRun','intArrayFromString','intArrayToString','writeStringToMemory',\
+      -sEXPORTED_RUNTIME_METHODS="['FS_createPath','FS_createDataFile',`
+'FS_createPreloadedFile','FS_createLazyFile','FS_createDevice','FS_unlink','addFunction',`
+'ccall','cwrap','setValue','getValue','ALLOC_NORMAL','ALLOC_STACK','AsciiToString',`
+'stringToAscii','UTF8ArrayToString','UTF8ToString','stringToUTF8Array','stringToUTF8',`
+'lengthBytesUTF8','stackTrace','addOnPreRun','addOnInit','addOnPreMain','addOnExit',`
+'addOnPostRun','intArrayFromString','intArrayToString','writeStringToMemory',`
 'writeArrayToMemory','writeAsciiToMemory','addRunDependency','removeRunDependency','HEAPU8']"
 
 } elseif ($generation_tool -match "Dymola") {
     Write-Host "→ Dymola build path"
 
-    docker run --rm -v "$current_dir:/src" -w /src emscripten/emsdk `
+    docker run --rm -v "${current_dir}:/src" -w /src emscripten/emsdk `
       emcc /src/fmu/sources/all.c /src/jsglue/glue.c `
         -I/src/fmu/sources `
         -I/src/include `
@@ -169,7 +167,7 @@ elseif(\${CMAKE_SYSTEM_NAME} STREQUAL \"Emscripten\")\
 # Helper: xmlquery via Docker+xmlstarlet (volume maps current dir as /data)
 function xmlquery {
     param([string[]]$Args)
-    docker run --rm -v "$current_dir:/data" pnnlmiscscripts/xmlstarlet `
+    docker run --rm -v "${current_dir}:/data" pnnlmiscscripts/xmlstarlet `
         sel --novalid @Args "/data/fmu/modelDescription.xml"
 }
 
