@@ -24,9 +24,14 @@ cd Bodylight.js-FMU-Compiler
 For Modelica models in OpenModelica, in OMEdit, export model as FMU 2.0 in co-simulation with CVODE solver, with source code and with `--fmiFlags=s:cvode` set in Tools->Options->Simulation->Additional Translation flags
 For Modelica models in Dymola, export model as FMU 2.0 in co-simulation with source code and CVODE solver:
 
-With the resulting `my_model.fmu` launch script
+With the resulting `my_model.fmu` launch script in Linux
 ```bash
 ./compile_docker.sh my_model.fmu
+```
+
+or in Windows powershell
+```bash
+./compile_docker.ps1 my_model.fmu
 ```
 
 Use option `-o` to enable compilation optimization, producing smaller and faster code (using `-O3 --clossure 1`), by default it is disabled.
