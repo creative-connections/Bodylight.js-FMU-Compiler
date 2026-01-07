@@ -42,17 +42,15 @@ New-Item -ItemType Directory -Path $fmu_dir, $build_dir | Out-Null
 
 # unzip FMU (requires 'tar' or 'Expand-Archive' depending on .fmu == .zip)
 Expand-Archive -LiteralPath $Input -DestinationPath $fmu_dir -Force
-
 $modelDescription = Join-Path $fmu_dir "modelDescription.xml"
+[xml]$xml = Get-Content $modelDescription -Encoding UTF8
 
-# Extract model name and generation tool via Docker+awk (avoid installing awk on Windows)
-$name = docker run --rm -v "${current_dir}:/src" -w /src alpine `
-    sh -c "awk 'BEGIN{RS=\"<CoSimulation\";FS=\"`\"`"} NR>1{for(i=1;i<NF;i++) if(\$i~/modelIdentifier=/){print \$(i+1);exit}}' /src/fmu/modelDescription.xml"
+$name = ($xml.SelectSingleNode("//*[@modelIdentifier]").modelIdentifier)
 $model_name = $name
+$generation_tool = $xml.fmiModelDescription.generationTool
 
-$generation_tool = docker run --rm -v "${current_dir}:/src" -w /src alpine `
-    sh -c "awk '/generationTool=/ {gsub(/.*generationTool=\"|\".*/,\"\",\$0);print \$0;exit}' /src/fmu/modelDescription.xml"
 Write-Host "Detected: $generation_tool (model: $name)"
+
 
 $zipfile = Join-Path $current_dir "$name.zip"
 if (Test-Path $zipfile) { Remove-Item $zipfile -Force }
@@ -165,10 +163,14 @@ elseif(\${CMAKE_SYSTEM_NAME} STREQUAL \"Emscripten\")\
 }
 
 # Helper: xmlquery via Docker+xmlstarlet (volume maps current dir as /data)
-function xmlquery {
+function xmlquery_old {
     param([string[]]$Args)
     docker run --rm -v "${current_dir}:/data" pnnlmiscscripts/xmlstarlet `
         sel --novalid @Args "/data/fmu/modelDescription.xml"
+}
+function xmlquery {
+    param([string]$XPath)
+    return $xml.SelectSingleNode($XPath).InnerText
 }
 
 function generate_web_app {
