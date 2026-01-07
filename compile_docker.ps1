@@ -52,7 +52,12 @@ if (Test-Path $fmu_dir)   { Remove-Item $fmu_dir   -Recurse -Force }
 New-Item -ItemType Directory -Path $fmu_dir, $build_dir | Out-Null
 
 # unzip FMU (requires 'tar' or 'Expand-Archive' depending on .fmu == .zip)
-Expand-Archive -LiteralPath $Input -DestinationPath $fmu_dir -Force
+# Around line 55, replace Expand-Archive with:
+$fmu_temp = Join-Path $current_dir "temp_fmu.zip"
+Copy-Item $Input $fmu_temp -Force
+Expand-Archive -LiteralPath $fmu_temp -DestinationPath $fmu_dir -Force
+Remove-Item $fmu_temp -Force
+
 $modelDescription = Join-Path $fmu_dir "modelDescription.xml"
 [xml]$xml = Get-Content $modelDescription -Encoding UTF8
 
