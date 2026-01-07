@@ -9,8 +9,6 @@ Such compiled javascript allows to access model simulation via FMI API v 2.0 as 
 
 To use Bodylight.js-FMU-Compiler, choose one of these options:
 1. compiler in docker - needs docker to be installed in environment.
-
-For legacy - older options are available:
 2. compiler in virtual machine - Vagrant tool and VirtualBox is needed - see [Bodylight-Virtualmachine](https://github.com/creative-connections/Bodylight-VirtualMachine)
 3. compiler in local environment - needs to install EMSDK,GLIBC and PYTHON3 manually
 
@@ -20,33 +18,53 @@ You may follow our tutorial at https://bodylight.physiome.cz/Bodylight-docs/tuto
 ```bash
 git clone https://github.com/creative-connections/Bodylight.js-FMU-Compiler
 cd Bodylight.js-FMU-Compiler
+cd manual_compiler
 ```
 For Modelica models in OpenModelica, in OMEdit, export model as FMU 2.0 in co-simulation with CVODE solver, with source code and with `--fmiFlags=s:cvode` set in Tools->Options->Simulation->Additional Translation flags
 For Modelica models in Dymola, export model as FMU 2.0 in co-simulation with source code and CVODE solver:
 
-With the resulting `my_model.fmu` launch script in Linux
+With the resulting `my_model.fmu` launch script
 ```bash
-./compile_docker.sh my_model.fmu
-```
-
-or in Windows powershell
-```bash
-./compile_docker.ps1 my_model.fmu
+./compile_docker.sh [-o] [-w] my_model.fmu
 ```
 
 Use option `-o` to enable compilation optimization, producing smaller and faster code (using `-O3 --clossure 1`), by default it is disabled.
 Use option `-w` to write resulting WASM embedded in JS into FMU/binaries/wasm32, by default it is disabled.
-Use option `-s` to generate sample web simulator into index.html, it is in resulting ZIP file
 
-The script compiles FMU to WebAssembly and embeds them into Javascript creates ZIP file with JS and XML with model description. Use it with dbs-webcomponents or bodylight.js web components.
-
-
+The script compiles FMU to WebAssembly and embeds them into Javascript creates ZIP file with JS and XML with model description. Use it with bodylight.js web components.
 
 ## 2. Compiler in Virtual Machine with upload/compiler web service (deprecated)
+(Recommended)
+Install Bodylight-VirtualMachine using `vagrant` tool and VirtualBox. Instruction at https://github.com/creative-connections/Bodylight-VirtualMachine 
+The compiler web service is available at http://localhost:8080/compiler
 
-For legacy options, see `legacy\README.md`.
-* [2026 - DBS web components](https://digital-biosystems.github.io/dbs-components/)
-* [2021 - Bodylight.js web components](https://bodylight.physiome.cz/)
+## 3. Compiler in Local Environmnet with upload/compiler web service (deprecated)
+(on your own risk)
+Be sure that EMSDK, GLIBC 2.18, Python 3 and CMake are installed e.g.
+- https://github.com/emscripten-core/emsdk.git
+- https://ftp.gnu.org/gnu/glibc/glibc-2.18.tar.gz
+- Python3 - use your system installer: e.g. `yum install python3` or `apt install python3` or install Miniconda or Anaconda environment (https://www.anaconda.com/products/individual)
+- CMake - use your system installer: e.g. `yum install cmake` or `apt install cmake`
+
+Bodylight.js-FMU-Compiler contains `index.html` and `save-file.py` to support compilation via simple web interface. Make the root of Bodylight.js-FMU-Compiler accessible for Apache web server, and the simple web form can be used.
+E.g.
+```
+Alias "/compiler" "/home/vagrant/Bodylight.js-FMU-Compiler/"
+<Directory "/home/vagrant/Bodylight.js-FMU-Compiler">
+  Options +ExecCGI
+  AddHandler cgi-script .py
+  Header set Access-Control-Allow-Origin "*"
+  Require all granted
+  Options +Indexes +FollowSymLinks +IncludesNOEXEC
+  IndexOptions FancyIndexing HTMLTable NameWidth=*
+  AllowOverride All
+</Directory> 
+```
+
+Allow access to input and output subdirectories of `Bodylight.js-FMU-Compiler`.
+```
+chmod ugo+rwx input output
+```
 
 # Examples
 

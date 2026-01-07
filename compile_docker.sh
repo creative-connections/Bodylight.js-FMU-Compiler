@@ -1,6 +1,6 @@
 #!/bin/bash
-set -ex
-echo "script version 2503 for FMU (OM/Dymola auto-detect) with CVODE to WebAssembly Dockerized"
+set -e
+echo "script version 2512 for FMU (OpenModelica/Dymola auto-detect) with CVODE to WebAssembly Dockerized"
 
 # Keep directories relative to host working dir
 current_dir="$(pwd)"
@@ -13,13 +13,15 @@ cvode_include="$current_dir/include"
 
 OPTIMIZED=0
 WEB_IN_FMU=0
+GEN_HTML=0
 
 # Parse options
-while getopts ":ow" opt; do
+while getopts ":ows" opt; do
   case "$opt" in
     o) OPTIMIZED=1 ;;
     w) WEB_IN_FMU=1 ;;
-    \?) echo "Usage: $0 [-o] [-w] input.fmu" >&2; exit 1 ;;
+    s) GEN_HTML=1 ;;
+    \?) echo -e "Usage: $0 [-o] [-w] [-s] input.fmu\n  -o Optimize code, default no\n  -w Embed webassembly in FMU, by default webassembly is only in resulting ZIP\n  -s Generate standalone web app in ZIP\n" >&2; exit 1
   esac
 done
 shift $((OPTIND - 1))
@@ -27,8 +29,7 @@ shift $((OPTIND - 1))
 # Positional argument: input
 INPUT="$1"
 if [ -z "$INPUT" ]; then
-  echo "Error: input FMU required" >&2
-  exit 1
+  echo -e "Usage: $0 [-o] [-w] [-s] input.fmu\n  -o Optimize code, default no\n  -w Embed webassembly in FMU, by default webassembly is only in resulting ZIP\n  -s Generate standalone web app in ZIP\n" >&2; exit 1
 fi
 
 if [ "$OPTIMIZED" -eq 1 ]; then
@@ -253,18 +254,160 @@ else
   exit 1
 fi
 
+XML_FILE="fmu/modelDescription.xml"
+# FIXED xmlquery - CORRECT Docker volume + xmlstarlet syntax
+xmlquery() {
+    #echo DEBUG: docker run --rm -v .:/data pnnlmiscscripts/xmlstarlet sel --novalid $@ /data/$XML_FILE >&2
+    docker run --rm -v .:/data pnnlmiscscripts/xmlstarlet sel --novalid $@ /data/$XML_FILE 
+}
+generate_web_app() {
+#XML_FILE="$fmu_dir/modelDescription.xml"
+BASENAME=$name
+
+FMU_NAME=$name
+JS_NAME=$name.js
+
+#echo "DEBUG: FMU=$FMU_NAME XML=$BASENAME" >&2
+
+#echo 1. METADATA - simple attribute queries  >&2
+GUID=$(xmlquery -t -v '//fmiModelDescription/@guid') # || xmlquery -t -v '//@guid' || echo "{1d4ccc00-2d27-41b0-ae1b-9e8bf1ab544b}")
+START_TIME=$(xmlquery -t -v '//DefaultExperiment/@startTime') # || echo "0")
+STOP_TIME=$(xmlquery -t -v '//DefaultExperiment/@stopTime') # || echo "2")
+TOLERANCE=$(xmlquery -t -v '//DefaultExperiment/@tolerance') # || echo "1e-9")
+STEP_SIZE=$(xmlquery -t -v '//DefaultExperiment/@stepSize') # || echo "0.001")
+
+#echo "DEBUG: GUID='$GUID'" >&2
+#echo "DEBUG: TIMES start=$START_TIME stop=$STOP_TIME tol=$TOLERANCE step=$STEP_SIZE" >&2
+
+#echo 2.States first 2 >&2
+STATE1_VR=$(xmlquery -t -m '//ScalarVariable[Real/@derivative][position()=1]' -v '@valueReference')
+STATE1_NAME=$(xmlquery -t -m '//ScalarVariable[Real/@derivative][position()=1]' -v '@name')
+STATE1_ONAME=$(echo "$STATE1_NAME" | sed 's/^der(//; s/)$//')
+STATE1_OVR=$(xmlquery -t -m "//ScalarVariable[@name='${STATE1_ONAME}']" -v '@valueReference')
+#STATE1_OVR=$(xmlquery -t -m '//ScalarVariable[Real/@derivative][position()=1]/Real' -v '@derivative')
+#STATE1_ONAME=$(xmlquery -t -m "//ScalarVariable[@valueReference='$STATE1_OVR'][1]" -v '@name')
+#STATE2_VR=$(xmlquery -t -m '//ScalarVariable[Real/@derivative][position()=2]' -v '@valueReference')
+#STATE2_NAME=$(xmlquery -t -m '//ScalarVariable[Real/@derivative][position()=2]' -v '@name')
+
+VR_LIST="${STATE1_OVR},${STATE1_VR}"
+LABEL_LIST="${STATE1_ONAME},${STATE1_NAME}"
+
+#echo "DEBUG STATES: VR=$VR_LIST LABELS=$LABEL_LIST" >&2
+
+#VR_LIST=$(echo "$STATES" | cut -d, -f1 | paste -sd, - | sed 's/,$//')
+#LABEL_LIST=$(echo "$STATES" | cut -d, -f2- | paste -sd, - | sed 's/,$//')
+#echo "DEBUG VR_LIST='$VR_LIST' LABEL_LIST='$LABEL_LIST'" >&2
+
+#echo 3. PARAMETERS causality="parameter" first 10  >&2
+PARAMS=$(xmlquery -t \
+  -m '//ScalarVariable[@causality="parameter"][position()<21]' \
+  -v '@name' -o ',' -v '@valueReference' -o ',' \
+  -m './Real[1]' -v '@start' -o ',' -v '@nominal' \
+  -n)
+
+#echo "DEBUG PARAMS: '$PARAMS'" >&2
+
+# Parse params → inputs/ranges
+INPUTS=""
+RANGE_HTML=""
+mapfile -t PARAM_LINES < <(echo "$PARAMS" | tr '\n' ';' | sed 's/;;*/;/g' | tr ';' '\n')
+for line in "${PARAM_LINES[@]}"; do
+  #echo "DEBUG processing param line: '$line'" >&2
+  IFS=, read -r NAME VREF START NOM <<< "$line"
+  [ -z "$NAME" ] && continue
+  START=${START:-0}
+  NOM=${NOM:-1}
+  MULT=1 
+  #MULT=$([ "$START" = "0.0" ] && echo "10" || echo "1")
+  MIN_R=$([ "$START" = "0.0" ] && echo "0" || echo "0.1")
+  MAX=$([ "$START" = "0.0" ] && echo "10" || echo "2")
+  DEFAULT=$([ "$START" = "0.0" ] && echo "0" || echo "1")
+  
+  INPUTS="${INPUTS}${NAME},${VREF},${NOM},${MULT},t;"
+  printf -v RANGE_LINE '  <dbs-range id="%s" label="%s" min="%s" max="%s" default="%s" step="0.1"></dbs-range>\n' "$NAME" "$NAME" "$MIN_R" "$MAX" "$DEFAULT"
+  RANGE_HTML="${RANGE_HTML}${RANGE_LINE}"
+  #RANGE_HTML="${RANGE_HTML}  <dbs-range id=\"${NAME}\" label=\"${NAME}\" min=\"${MIN_R}\" max=\"2\" default=\"1\" step=\"0.1\"></dbs-range>\n"
+  #echo DEBUG range html:$RANGE_HTML >&2
+  #echo DEBUG inputs:$INPUTS >&2
+done
+#echo "DEBUG INPUTS preview: '$INPUTS'" >&2
+#echo DEBUG range html:$RANGE_HTML >&2
+
+# Charts
+CHARTS=""
+i=0
+printf -v CHARTS_LINE '  <dbs-chartjs4 fromid="fmi" refindex="%d" labels="time,%s" timedenom="1"></dbs-chartjs4>\n' "$i" "$STATE1_ONAME"
+CHARTS="${CHARTS}${CHARTS_LINE}"
+i=$(( i + 1 ))
+printf -v CHARTS_LINE '  <dbs-chartjs4 fromid="fmi" refindex="%d" labels="time,%s" timedenom="1"></dbs-chartjs4>\n' "$i" "$STATE1_NAME"
+CHARTS="${CHARTS}${CHARTS_LINE}"
+#echo "DEBUG CHARTS preview: '$CHARTS'" >&2
+
+# PRODUCTION HTML
+cat > "$build_dir/index.html" << EOF
+<!DOCTYPE html>
+<html>
+<head>
+<title>Web FMI: $FMU_NAME</title>
+<script src="dbs-shared.js"></script>
+<script src="dbs-chartjs.js"></script>
+<style>
+.w3-row:after,.w3-row:before{content:"";display:table;clear:both}
+.w3-third,.w3-twothird{float:left;width:100%}
+.w3-twothird{width:66.66666%}
+.w3-third{width:33.33333%}
+.w3-small{font-size:12px!important}
+</style>
+</head>
+<body>  
+<div class="w3-row">
+  <div class="w3-twothird">
+    <h3>Web FMI Simulation</h3>
+    <p>Chart of state variable and it's derivative</p>
+    <dbs-fmi id="fmi" src="$JS_NAME" fminame="$FMU_NAME" guid="$GUID"
+             valuereferences="$VR_LIST" valuelabels="$LABEL_LIST"
+             inputs="$INPUTS" mode="oneshot" starttime="$START_TIME" 
+             stoptime="$STOP_TIME" tolerance="$TOLERANCE" fstepsize="$STEP_SIZE">
+    </dbs-fmi>
+$CHARTS  
+</div>
+  <div class="w3-third">
+    <h3>Parameters</h3>
+    <p>Adjust the parameters (relative value based on default,0-10 times nominal, or 0.1 to 2 times of default non-zero start)</p>
+$RANGE_HTML  
+</div>
+</div>
+<p class="w3-small">Generated by Bodylight.js FMI Compiler. To customize web simulators, 
+for 2025 version visit <a href="https://digital-biosystems.github.io/dbs-components/">https://digital-biosystems.github.io/dbs-components/</a> or for previous version visit <a href="https://bodylight.physiome.cz">https://bodylight.physiome.cz</a>.</p>
+</body>
+</html>
+EOF
+}
+
+if [ "$GEN_HTML" -eq 1 ]; then
+  echo "Generating simple web app HTML ..."
+  generate_web_app
+fi
+
+echo "Generating ZIP ... 2"
+
 # Package outputs (common)
 if [ -f "$build_dir/$name.js" ] ; then
     cp "$fmu_dir/modelDescription.xml" "$build_dir/$name.xml"
-    zip -j "$zipfile" "$build_dir/$name.js" "$build_dir/$name.xml"
-    
+    if [ "$GEN_HTML" -eq 1 ]; then
+      zip -j "$zipfile" "$build_dir/$name.js" "$build_dir/$name.xml" "$build_dir/index.html" "js/dbs-shared.js" "js/dbs-chartjs.js"
+      echo "Standalone zip with WebAssembly and default web simulator in index.html generated: $zipfile"
+    else
+      zip -j "$zipfile" "$build_dir/$name.js" "$build_dir/$name.xml"
+      echo "Standalone zip with WebAssembly embedded in JS generated: $zipfile"
+    fi
     if [ "$WEB_IN_FMU" -eq 1 ]; then
         mkdir -p "$fmu_dir/binaries/wasm32"
         cp "$build_dir/$name.js" "$fmu_dir/binaries/wasm32"
         (cd "$fmu_dir" && zip -ur "../$INPUT" binaries/wasm32)
         echo "JS/WASM added to FMU: $INPUT"
     else
-        echo "JS/WASM NOT added to FMU (use -w). Standalone zip: $zipfile"
+        echo ""
     fi
 fi
 
