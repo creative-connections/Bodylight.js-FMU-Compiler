@@ -1,10 +1,21 @@
-param(
-    [switch]$o,
-    [switch]$w,
-    [switch]$s,
-    [Parameter(Mandatory = $true, Position = 0)]
-    [string]$Input
-)
+# Parse flags manually
+$OPTIMIZED = $false
+$WEB_IN_FMU = $false
+$GEN_HTML = $false
+
+for ($i = 0; $i -lt $args.Count; $i++) {
+    switch ($args[$i]) {
+        "-o" { $OPTIMIZED = $true }
+        "-w" { $WEB_IN_FMU = $true }
+        "-s" { $GEN_HTML = $true }
+    }
+}
+
+$INPUT = $args[-1]  # Last positional arg
+if ([string]::IsNullOrEmpty($INPUT)) {
+    Write-Host "Usage: .\compile_docker.ps1 [-o] [-w] [-s] input.fmu" -ForegroundColor Red
+    exit 1
+}
 
 $ErrorActionPreference = "Stop"
 Write-Host "script version 2512 for FMU (OpenModelica/Dymola auto-detect) with CVODE to WebAssembly Dockerized"
