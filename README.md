@@ -18,7 +18,8 @@ You may follow our tutorial at https://bodylight.physiome.cz/Bodylight-docs/tuto
 
 ## 1. Manual compiler (default, updated 12/2025)
 Requirements:
-* Docker
+* Docker (in linux install `docker.io` in windows `Docker Desktop` to be able to execute CLI `docker run`)
+* test if by launching `docker run --rm hello-world`
 
 ```bash
 git clone https://github.com/creative-connections/Bodylight.js-FMU-Compiler
@@ -36,10 +37,10 @@ or in Windows powershell
 ```bash
 ./compile_docker.ps1 my_model.fmu
 ```
-
-Use option `-o` to enable compilation optimization, producing smaller and faster code (using `-O3 --clossure 1`), by default it is disabled.
-Use option `-w` to write resulting WASM embedded in JS into FMU/binaries/wasm32, by default it is disabled.
-Use option `-s` to generate sample web simulator into index.html, it is in resulting ZIP file
+OPTIONALLY: 
+* Use option `-o` to enable compilation optimization, producing smaller and faster code (using `-O3 --clossure 1`), by default it is disabled.
+* Use option `-w` to write resulting WASM embedded in JS into FMU/binaries/wasm32, by default it is disabled.
+* Use option `-s` to generate sample web simulator into index.html, it is in resulting ZIP file
 
 The script compiles FMU to WebAssembly and embeds them into Javascript creates ZIP file with JS and XML with model description. Use it with dbs-webcomponents or bodylight.js web components.
 
