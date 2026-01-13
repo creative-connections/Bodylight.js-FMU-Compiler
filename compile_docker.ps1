@@ -395,7 +395,7 @@ function Generate-WebApp {
 <head>
 <title>Web FMI: $FMU_NAME</title>
 <script src="dbs-shared.js"></script>
-<script src="dbs-chartjs.js"></script>
+<script src="dbs-fmi.js"></script>
 <style>
 .w3-row:after,.w3-row:before{content:"";display:table;clear:both}
 .w3-third,.w3-twothird{float:left;width:100%}
